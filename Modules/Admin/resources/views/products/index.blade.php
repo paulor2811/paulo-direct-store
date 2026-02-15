@@ -111,11 +111,11 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="flex-shrink-0 h-16 w-16">
                                                         @if($produto->images()->count() > 0)
-                                                            <img class="h-10 w-10 rounded-full object-cover" src="{{ $produto->main_image_url ?? asset('images/placeholder.png') }}" alt="">
+                                                            <img class="h-16 w-16 rounded object-cover" src="{{ $produto->main_image_url ?? asset('images/placeholder.png') }}" alt="">
                                                         @else
-                                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                            <div class="h-16 w-16 rounded bg-gray-200 flex items-center justify-center">
                                                                 <span class="text-xs text-gray-500">N/A</span>
                                                             </div>
                                                         @endif
