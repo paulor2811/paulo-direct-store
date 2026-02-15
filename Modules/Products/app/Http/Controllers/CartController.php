@@ -16,7 +16,7 @@ class CartController extends Controller
         $items = [];
 
         if (!empty($cart)) {
-            $products = Produto::with('fotos')->whereIn('id', array_keys($cart))->get();
+            $products = Produto::with('media_files')->whereIn('id', array_keys($cart))->get();
             
             foreach ($products as $product) {
                 $qty = $cart[$product->id];
