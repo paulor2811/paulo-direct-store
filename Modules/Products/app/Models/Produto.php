@@ -54,6 +54,14 @@ class Produto extends Model
     }
 
     /**
+     * Alias for mediaFiles (snake_case version)
+     */
+    public function media_files()
+    {
+        return $this->mediaFiles();
+    }
+
+    /**
      * Get product images from S3
      */
     public function images()
