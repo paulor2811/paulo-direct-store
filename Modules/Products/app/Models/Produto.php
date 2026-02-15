@@ -44,4 +44,29 @@ class Produto extends Model
     {
         return $this->hasMany(FotoProduto::class, 'produto_id');
     }
+
+    /**
+     * Get all media files for this product
+     */
+    public function mediaFiles()
+    {
+        return $this->morphMany(\App\Models\MediaFile::class, 'model');
+    }
+
+    /**
+     * Get product images from S3
+     */
+    public function images()
+    {
+        return $this->mediaFiles()->where('file_type', 'product_image')->get();
+    }
+
+    /**
+     * Get main/first product image URL
+     */
+    public function getMainImageUrlAttribute(): ?string
+    {
+        $image = $this->mediaFiles()->where('file_type', 'product_image')->first();
+        return $image ? $image->url : null;
+    }
 }

@@ -13,3 +13,8 @@ Route::post('/cart/update/{id}', [Modules\Products\Http\Controllers\CartControll
 // Public resource routes (auth handled in controller)
 Route::get('products/categories', [Modules\Products\Http\Controllers\CategoriesController::class, 'index'])->name('products.categories');
 Route::resource('products', ProductsController::class)->names('products');
+
+// Delete individual product image
+Route::delete('products/{product}/images/{image}', [ProductsController::class, 'deleteImage'])
+    ->middleware(['auth', 'verified'])
+    ->name('products.images.delete');

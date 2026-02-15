@@ -12,9 +12,9 @@
     <form method="post" action="{{ route('profile.photo.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
 
-        @if (Auth::user()->profile_photo_path)
+        @if (Auth::user()->profile_photo_url)
             <div class="mt-2">
-                <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" alt="{{ Auth::user()->name }}" class="rounded-full h-20 w-20 object-cover">
+                <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" class="rounded-full h-20 w-20 object-cover">
             </div>
         @endif
 

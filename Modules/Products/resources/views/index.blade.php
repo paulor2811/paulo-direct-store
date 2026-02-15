@@ -16,10 +16,10 @@
                         <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden">
                             <!-- Image / Carousel Container -->
                             <div class="aspect-h-1 aspect-w-1 w-full relative bg-gray-100 dark:bg-gray-700 h-64 sm:h-72">
-                                @if($product->fotos->isNotEmpty())
-                                    <div class="carousel relative w-full h-full overflow-hidden" x-data="{ activeSlide: 0, slides: {{ $product->fotos->count() }} }">
+                                @if($product->images()->isNotEmpty())
+                                    <div class="carousel relative w-full h-full overflow-hidden" x-data="{ activeSlide: 0, slides: {{ $product->images()->count() }} }">
                                         <!-- Slides -->
-                                        @foreach($product->fotos as $index => $foto)
+                                        @foreach($product->images() as $index => $foto)
                                             <div class="absolute inset-0 transition-opacity duration-500 ease-in-out bg-white dark:bg-gray-800"
                                                  x-show="activeSlide === {{ $index }}"
                                                  x-transition:enter="transition ease-out duration-300"
@@ -29,14 +29,14 @@
                                                  x-transition:leave-start="opacity-100"
                                                  x-transition:leave-end="opacity-0">
                                                 @php
-                                                    $url = Str::startsWith($foto->caminho_imagem, 'http') ? $foto->caminho_imagem : asset('storage/' . $foto->caminho_imagem);
+                                                    $url = Str::startsWith($foto->caminho_imagem, 'http') ? $foto->caminho_imagem : $foto->url;
                                                 @endphp
                                                 <img src="{{ $url }}" alt="{{ $product->nome }}" class="h-full w-full object-contain p-4" onerror="this.onerror=null; this.src='https://placehold.co/400x400?text=Sem+Imagem';">
                                             </div>
                                         @endforeach
 
                                         <!-- Controls (only if > 1 image) -->
-                                        @if($product->fotos->count() > 1)
+                                        @if($product->images()->count() > 1)
                                             <button @click.prevent="activeSlide = activeSlide === 0 ? slides - 1 : activeSlide - 1" class="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors backdrop-blur-sm z-10">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                             </button>

@@ -39,15 +39,14 @@ class ProfileController extends Controller
     public function updatePhoto(Request $request): RedirectResponse
     {
         $request->validate([
-            'photo' => ['required', 'image', 'max:1024'],
+            'photo' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:10240'], // 10MB
         ]);
 
         $user = $request->user();
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('profile-photos', 'public');
-            $user->profile_photo_path = $path;
-            $user->save();
+            $imageStorage = app(\App\Services\ImageStorageService::class);
+            $imageStorage->uploadProfilePhoto($user, $request->file('photo'));
         }
 
         return Redirect::route('profile.edit')->with('status', 'photo-updated');

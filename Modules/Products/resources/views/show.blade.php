@@ -42,12 +42,12 @@
 
       <div class="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
         <div class="shrink-0 w-full max-w-md lg:max-w-lg mx-auto">
-            @if($product->fotos->isNotEmpty())
+            @if($product->images()->isNotEmpty())
                 <div class="space-y-4">
                     <!-- Main Image Container -->
                     <div class="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group">
                         <!-- Main Image -->
-                        <img id="main-image" class="w-auto h-[400px] mx-auto object-contain transition-transform duration-300" src="{{ asset('storage/' . $product->fotos->first()->caminho_imagem) }}" alt="{{ $product->nome }}" />
+                        <img id="main-image" class="w-auto h-[400px] mx-auto object-contain transition-transform duration-300" src="{{ $product->main_image_url ?? asset('images/placeholder.png') }}" alt="{{ $product->nome }}" />
                         
                         <!-- Prev Button -->
                         <button onclick="changeImage(-1)" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-gray-800 dark:text-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none">
@@ -61,13 +61,13 @@
                     </div>
 
                     <!-- Thumbnails -->
-                    @if($product->fotos->count() > 1)
+                    @if($product->images()->count() > 1)
                     <div class="grid grid-cols-4 gap-4">
-                        @foreach($product->fotos as $index => $foto)
+                        @foreach($product->images() as $index => $foto)
                         <button onclick="selectImage({{ $index }})" 
                                 class="thumbnail-btn border-2 {{ $index === 0 ? 'border-primary-600 ring-2 ring-primary-500' : 'border-transparent' }} hover:border-primary-600 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-20 flex items-center justify-center focus:outline-none transition-all"
                                 data-index="{{ $index }}">
-                            <img class="w-full h-full object-contain" src="{{ asset('storage/' . $foto->caminho_imagem) }}" alt="Thumbnail">
+                            <img class="w-full h-full object-contain" src="{{ $foto->url }}" alt="Thumbnail">
                         </button>
                         @endforeach
                     </div>
@@ -77,8 +77,8 @@
                 <!-- Gallery Script -->
                 <script>
                     const productImages = [
-                        @foreach($product->fotos as $foto)
-                            "{{ asset('storage/' . $foto->caminho_imagem) }}",
+                        @foreach($product->images() as $foto)
+                            "{{ $foto->url }}",
                         @endforeach
                     ];
                     let currentImageIndex = 0;
@@ -156,8 +156,8 @@
           <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
             @php
                 $whatsappMessage = 'Olá, tenho interesse no produto: ' . $product->nome . "\n" . 'ID: ' . $product->id;
-                if ($product->fotos->isNotEmpty()) {
-                     $whatsappMessage .= "\n" . 'Foto: ' . asset('produtos_imagens/' . $product->fotos->first()->caminho_imagem);
+                if ($product->main_image_url) {
+                     $whatsappMessage .= "\n" . 'Foto: ' . $product->main_image_url;
                 } else {
                      $whatsappMessage .= "\n(Sem foto disponível)";
                 }
@@ -277,8 +277,8 @@
               @foreach($relatedProducts as $related)
               <div class="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                   <a href="{{ route('products.show', $related->id) }}">
-                      @if($related->fotos->isNotEmpty())
-                        <img class="p-4 rounded-t-lg w-full h-48 object-contain" src="{{ asset('produtos_imagens/' . $related->fotos->first()->caminho_imagem) }}" alt="{{ $related->nome }}" />
+                      @if($related->images()->isNotEmpty())
+                        <img class="p-4 rounded-t-lg w-full h-48 object-contain" src="{{ $related->main_image_url ?? asset('images/placeholder.png') }}" alt="{{ $related->nome }}" />
                       @else
                         <div class="p-4 w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">Sem Imagem</div>
                       @endif

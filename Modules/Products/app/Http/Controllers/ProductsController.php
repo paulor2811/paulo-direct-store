@@ -36,7 +36,33 @@ class ProductsController extends Controller implements HasMiddleware
         return view('products::create');
     }
 
-    public function store(Request $request) {}
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nome' => 'required|string|max:255',
+            'descricao' => 'required|string',
+            'marca' => 'nullable|string|max:255',
+            'modelo' => 'nullable|string|max:255',
+            'cor' => 'nullable|string|max:100',
+            'preco' => 'required|numeric|min:0',
+            'categoria_produto_id' => 'required|exists:categoria_produtos,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+        ]);
+
+        $product = Produto::create($validated);
+
+        // Upload images to S3
+        if ($request->hasFile('images')) {
+            $imageStorage = app(\App\Services\ImageStorageService::class);
+            foreach ($request->file('images') as $image) {
+                $imageStorage->uploadProductImage($product, $image);
+            }
+        }
+
+        return redirect()->route('products.show', $product->id)
+            ->with('success', 'Produto criado com sucesso!');
+    }
 
     public function show($id)
     {
@@ -52,10 +78,84 @@ class ProductsController extends Controller implements HasMiddleware
 
     public function edit($id)
     {
-        return view('products::edit');
+        $product = Produto::findOrFail($id);
+        $categories = CategoriaProduto::all();
+        
+        return view('products::edit', compact('product', 'categories'));
     }
 
-    public function update(Request $request, $id) {}
+    public function update(Request $request, $id)
+    {
+        $product = Produto::findOrFail($id);
+        
+        $validated = $request->validate([
+            'nome' => 'required|string|max:255',
+            'descricao' => 'required|string',
+            'marca' => 'nullable|string|max:255',
+            'modelo' => 'nullable|string|max:255',
+            'cor' => 'nullable|string|max:100',
+            'preco' => 'required|numeric|min:0',
+            'categoria_produto_id' => 'required|exists:categoria_produtos,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'exists:media_files,id',
+        ]);
 
-    public function destroy($id) {}
+        $product->update($validated);
+
+        $imageStorage = app(\App\Services\ImageStorageService::class);
+
+        // Delete marked images
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $imageId) {
+                $mediaFile = \App\Models\MediaFile::find($imageId);
+                if ($mediaFile && $mediaFile->model_id === $product->id) {
+                    $imageStorage->deleteFile($mediaFile);
+                }
+            }
+        }
+
+        // Upload new images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imageStorage->uploadProductImage($product, $image);
+            }
+        }
+
+        return redirect()->route('products.show', $product->id)
+            ->with('success', 'Produto atualizado com sucesso!');
+    }
+
+    public function destroy($id)
+    {
+        $product = Produto::findOrFail($id);
+        $product->delete(); // Soft delete - observer will handle S3 cleanup
+        
+        return redirect()->route('products.index')
+            ->with('success', 'Produto deletado com sucesso!');
+    }
+
+    /**
+     * Delete a single product image
+     */
+    public function deleteImage(Request $request, $productId, $imageId)
+    {
+        $product = Produto::findOrFail($productId);
+        $mediaFile = \App\Models\MediaFile::findOrFail($imageId);
+
+        // Verify image belongs to this product
+        if ($mediaFile->model_id !== $product->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $imageStorage = app(\App\Services\ImageStorageService::class);
+        $imageStorage->deleteFile($mediaFile);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', 'Imagem deletada com sucesso!');
+    }
 }

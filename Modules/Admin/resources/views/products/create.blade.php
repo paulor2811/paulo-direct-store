@@ -84,18 +84,23 @@
                             <x-input-label for="fotos" :value="__('Fotos do Produto (Máx 5)')" />
                             
                             <!-- Existing Photos -->
-                            @if(isset($produto) && $produto->fotos->isNotEmpty())
-                                <div class="mb-4 grid grid-cols-2 md:grid-cols-5 gap-4">
-                                    @foreach($produto->fotos as $foto)
-                                        <div class="relative group" id="foto-{{ $foto->id }}">
-                                            <img src="{{ asset('storage/' . $foto->caminho_imagem) }}" class="h-24 w-full object-cover rounded-lg shadow-md">
-                                            <button type="button" onclick="markForRemoval('{{ $foto->id }}')" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            </button>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div id="remove-photos-container"></div>
+                            @if(isset($produto))
+                                @php
+                                    $existingImages = $produto->images();
+                                @endphp
+                                @if($existingImages->count() > 0)
+                                    <div class="mb-4 grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        @foreach($existingImages as $foto)
+                                            <div class="relative group" id="foto-{{ $foto->id }}">
+                                                <img src="{{ $foto->url }}" class="h-24 w-full object-cover rounded-lg shadow-md">
+                                                <button type="button" onclick="markForRemoval('{{ $foto->id }}')" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div id="remove-photos-container"></div>
+                                @endif
                             @endif
 
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-500 transition-colors cursor-pointer" onclick="document.getElementById('fotos').click()">
@@ -191,17 +196,8 @@
                             <textarea id="descricao" name="descricao" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('descricao', $produto->descricao ?? '') }}</textarea>
                         </div>
 
-                        <div class="flex items-center gap-4">
-                            @if(isset($produto))
-                                <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                            {{ __('Excluir Anúncio') }}
-                                        </button>
-                                    </x-slot>
-                                </x-modal-delete-confirmation>
-                            @endif
 
+                        <div class="flex items-center gap-4">
                             <x-primary-button>{{ isset($produto) ? __('Salvar Alterações') : __('Criar Anúncio') }}</x-primary-button>
                         </div>
                     </form>
@@ -209,4 +205,27 @@
             </div>
         </div>
     </div>
+
+    {{-- Delete button completely separated from form to avoid any submission conflicts --}}
+    @if(isset($produto))
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 border-t-2 border-red-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Zona de Perigo</h3>
+                            <p class="mt-1 text-sm text-gray-600">Esta ação irá remover permanentemente o produto.</p>
+                        </div>
+                        <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
+                            <x-slot name="trigger">
+                                <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    {{ __('Excluir Anúncio') }}
+                                </button>
+                            </x-slot>
+                        </x-modal-delete-confirmation>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </x-admin-layout>

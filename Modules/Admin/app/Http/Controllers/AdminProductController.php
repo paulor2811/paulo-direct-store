@@ -3,11 +3,11 @@
 namespace Modules\Admin\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\MediaFile;
+use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
 use Modules\Products\Models\CategoriaProduto;
 use Modules\Products\Models\Produto;
-use Modules\Products\Models\FotoProduto;
-use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
@@ -17,15 +17,19 @@ class AdminProductController extends Controller
     public function destroy($id)
     {
         $produto = Produto::findOrFail($id);
-
-        // Delete images from storage
-        foreach ($produto->fotos as $foto) {
-            Storage::disk('public')->delete($foto->caminho_imagem);
-        }
         
-        // Delete photo records
-        $produto->fotos()->delete();
-
+        // Log the deletion for debugging
+        \Log::info('Product deletion triggered', [
+            'product_id' => $id,
+            'product_name' => $produto->nome,
+            'user_id' => auth()->id(),
+            'request_url' => request()->fullUrl(),
+            'request_method' => request()->method(),
+            'referer' => request()->header('referer'),
+            'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5)
+        ]);
+        
+        // ProdutoObserver will automatically delete S3 images
         $produto->delete();
 
         return redirect()->route('admin.products.index')->with('success', 'Produto removido com sucesso!');
@@ -125,13 +129,9 @@ class AdminProductController extends Controller
         ]);
 
         if ($request->hasFile('fotos')) {
+            $imageStorage = app(ImageStorageService::class);
             foreach ($request->file('fotos') as $foto) {
-                $path = $foto->store('produtos', 'public');
-                
-                FotoProduto::create([
-                    'produto_id' => $produto->id,
-                    'caminho_imagem' => $path,
-                ]);
+                $imageStorage->uploadProductImage($produto, $foto);
             }
         }
 
@@ -152,6 +152,14 @@ class AdminProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+        \Log::info('UPDATE method called', [
+            'product_id' => $id,
+            'request_method' => $request->method(),
+            'has_fotos' => $request->hasFile('fotos'),
+            'has_remove_fotos' => $request->has('remove_fotos'),
+            'request_url' => $request->fullUrl(),
+        ]);
+        
         $produto = Produto::findOrFail($id);
         
         $validated = $request->validate([
@@ -165,7 +173,7 @@ class AdminProductController extends Controller
             'fotos' => 'nullable|array|max:5',
             'fotos.*' => 'image|max:2048',
             'remove_fotos' => 'nullable|array',
-            'remove_fotos.*' => 'exists:fotos_produtos,id',
+            'remove_fotos.*' => 'exists:media_files,id',
         ]);
 
         $produto->update([
@@ -178,18 +186,22 @@ class AdminProductController extends Controller
             'descricao' => $validated['descricao'] ?? null,
         ]);
 
+        $imageStorage = app(ImageStorageService::class);
+
         // Remove photos
         if ($request->has('remove_fotos')) {
-             $fotosToRemove = FotoProduto::whereIn('id', $request->remove_fotos)->where('produto_id', $produto->id)->get();
+             $fotosToRemove = MediaFile::whereIn('id', $request->remove_fotos)
+                 ->where('model_type', get_class($produto))
+                 ->where('model_id', $produto->id)
+                 ->get();
              foreach ($fotosToRemove as $foto) {
-                 Storage::disk('public')->delete($foto->caminho_imagem);
-                 $foto->delete();
+                 $imageStorage->deleteFile($foto);
              }
         }
 
         // Add new photos
         if ($request->hasFile('fotos')) {
-            $currentCount = $produto->fotos()->count();
+            $currentCount = $produto->images()->count();
             $newCount = count($request->file('fotos'));
             
             if ($currentCount + $newCount > 5) {
@@ -197,14 +209,20 @@ class AdminProductController extends Controller
             }
 
             foreach ($request->file('fotos') as $foto) {
-                $path = $foto->store('produtos', 'public');
-                
-                FotoProduto::create([
-                    'produto_id' => $produto->id,
-                    'caminho_imagem' => $path,
-                ]);
+                $imageStorage->uploadProductImage($produto, $foto);
             }
+            
+            \Log::info('Images uploaded successfully in update', [
+                'product_id' => $produto->id,
+                'new_images_count' => $newCount,
+                'total_images' => $produto->images()->count(),
+            ]);
         }
+
+        \Log::info('UPDATE completed successfully', [
+            'product_id' => $produto->id,
+            'redirect_to' => route('admin.products.index'),
+        ]);
 
         return redirect()->route('products.show', $produto->id)->with('success', 'Produto atualizado com sucesso!');
     }

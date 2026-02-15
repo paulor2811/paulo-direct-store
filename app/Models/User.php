@@ -60,4 +60,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserAddress::class);
     }
+
+    /**
+     * Get all media files for this user
+     */
+    public function mediaFiles()
+    {
+        return $this->morphMany(MediaFile::class, 'model');
+    }
+
+    /**
+     * Get the user's profile photo
+     */
+    public function profilePhoto()
+    {
+        return $this->mediaFiles()->where('file_type', 'profile')->first();
+    }
+
+    /**
+     * Get profile photo URL
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        $photo = $this->profilePhoto();
+        return $photo ? $photo->url : null;
+    }
 }
