@@ -31,7 +31,7 @@
                                                 @php
                                                     $url = Str::startsWith($foto->caminho_imagem, 'http') ? $foto->caminho_imagem : $foto->url;
                                                 @endphp
-                                                <img src="{{ $url }}" alt="{{ $product->nome }}" class="h-full w-full object-contain p-4" onerror="this.onerror=null; this.src='https://placehold.co/400x400?text=Sem+Imagem';">
+                                                <img src="{{ $url }}" alt="{{ $product->nome }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x400?text=Sem+Imagem';">
                                             </div>
                                         @endforeach
 
