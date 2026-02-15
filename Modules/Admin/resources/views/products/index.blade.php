@@ -109,7 +109,7 @@
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($produtos as $produto)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-6 py-4">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-16 w-16">
                                                         @if($produto->images()->count() > 0)
@@ -130,18 +130,18 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-6 py-4">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                     {{ $produto->categoria->nome ?? 'Sem Categoria' }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="px-6 py-4 text-sm text-gray-500">
                                                 R$ {{ number_format($produto->preco, 2, ',', '.') }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="px-6 py-4 text-sm text-gray-500">
                                                 {{ \Carbon\Carbon::parse($produto->created_at)->format('d/m/Y') }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td class="px-6 py-4 text-right text-sm font-medium">
                                                 <a href="{{ route('admin.products.edit', $produto->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
                                                 <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
                                                     <x-slot name="trigger">
