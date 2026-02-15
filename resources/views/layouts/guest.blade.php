@@ -17,8 +17,14 @@
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="bg-primary-600 text-white p-1.5 rounded-lg shadow-sm group-hover:bg-primary-700 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="self-center text-2xl font-extrabold whitespace-nowrap tracking-wide text-gray-900 uppercase leading-none">Paulo<span class="text-primary-600">Direct</span></span>
+                        <span class="text-[0.65rem] text-gray-500 uppercase tracking-[0.2em] leading-none text-right">Store</span>
+                    </div>
                 </a>
             </div>
 
