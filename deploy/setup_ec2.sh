@@ -3,21 +3,20 @@
 # Stop on error
 set -e
 
-echo "🚀 Starting Server Setup for PauloDirect..."
+echo "🚀 Starting Server Setup for PauloDirect (Amazon Linux 2023)..."
 
 # 1. System Update
 echo "📦 Updating system packages..."
-sudo apt-get update
-sudo apt-get upgrade -y
+sudo dnf update -y
 
 # 2. Configure SWAP (Critical for t3.micro 1GB RAM)
 if [ ! -f /swapfile ]; then
     echo "💾 Configuring 2GB Swap file for t3.micro..."
-    sudo fallocate -l 2G /swapfile
+    sudo dd if=/dev/zero of=/swapfile bs=128M count=16
     sudo chmod 600 /swapfile
     sudo mkswap /swapfile
     sudo swapon /swapfile
-    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
     echo "✅ Swap created successfully!"
 else
     echo "✅ Swap already exists."
@@ -26,25 +25,21 @@ fi
 # 3. Install Docker & Docker Compose
 if ! command -v docker &> /dev/null; then
     echo "🐳 Installing Docker..."
-    sudo apt-get install -y ca-certificates curl gnupg
+    sudo dnf install -y docker
     
-    # Add Docker's official GPG key
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-    # Add the repository to Apt sources
-    echo \
-      "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    # Start Docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
     
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
     # Add current user to docker group
-    sudo usermod -aG docker $USER
-    echo "✅ Docker installed. You might need to logout and login again."
+    sudo usermod -aG docker ec2-user
+    
+    # Install Docker Compose (Standalone)
+    mkdir -p ~/.docker/cli-plugins/
+    curl -SL https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+    chmod +x ~/.docker/cli-plugins/docker-compose
+    
+    echo "✅ Docker installed. You MUST logout and login again for permissions to take effect."
 else
     echo "✅ Docker already installed."
 fi
@@ -57,8 +52,10 @@ mkdir -p storage/logs
 mkdir -p bootstrap/cache
 
 # Fix permissions
-sudo chown -R $USER:$USER .
-chmod -R 775 storage bootstrap/cache
+# On Amazon Linux, the user is usually ec2-user, but inside docker it might be different.
+# For now, we give broad permissions to storage to avoid issues
+chmod -R 777 storage bootstrap/cache
 
 echo "🎉 Setup Complete! You are ready to deploy."
-echo "👉 Next step: Run 'docker compose -f docker-compose.prod.yml up -d --build'"
+echo "👉 IMPORTANT: Log out and log back in to apply Docker permissions."
+echo "👉 Then run: docker compose -f docker-compose.prod.yml up -d --build"
