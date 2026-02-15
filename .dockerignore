@@ -1,0 +1,6 @@
+docker/
+vendor/
+node_modules/
+.git/
+storage/*.key
+!docker/app/entrypoint.sh

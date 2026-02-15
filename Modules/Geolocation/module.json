@@ -1,0 +1,11 @@
+{
+    "name": "Geolocation",
+    "alias": "geolocation",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Geolocation\\Providers\\GeolocationServiceProvider"
+    ],
+    "files": []
+}

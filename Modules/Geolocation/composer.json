@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/geolocation",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Geolocation\\": "app/",
+            "Modules\\Geolocation\\Database\\Factories\\": "database/factories/",
+            "Modules\\Geolocation\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Geolocation\\Tests\\": "tests/"
+        }
+    }
+}

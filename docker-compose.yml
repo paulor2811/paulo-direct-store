@@ -1,0 +1,82 @@
+services:
+  app:
+    entrypoint: sh /var/www/docker/app/entrypoint.sh
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: paulo-direct-api
+    container_name: paulodirect-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    ports:
+      - "5173:5173"
+    networks:
+      - paulodirect-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: paulodirect-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - paulodirect-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: paulodirect-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80" # O Nginx é o único dono da porta 8000 agora
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - paulodirect-network
+    depends_on:
+      - app
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: paulodirect-portainer
+    restart: always
+    ports:
+      - "9443:9443"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/var/lib/portainer
+    networks:
+      - paulodirect-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: paulodirect-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@paulodirect.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - paulodirect-network
+    depends_on:
+      - db
+
+networks:
+  paulodirect-network:
+    driver: bridge
+
+volumes:
+  portainer_data:
+  pgdata:
+  pgadmin_data:
