@@ -8,12 +8,8 @@
                 @foreach($items as $item)
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex gap-4 items-center">
                         <div class="w-20 h-20 flex-shrink-0">
-                            @if($item->product->fotos->isNotEmpty())
-                                @php
-                                    $foto = $item->product->fotos->first();
-                                    $url = Str::startsWith($foto->caminho_imagem, 'http') ? $foto->caminho_imagem : asset('storage/' . $foto->caminho_imagem);
-                                @endphp
-                                <img src="{{ $url }}" alt="{{ $item->product->nome }}" class="w-full h-full object-contain rounded">
+                            @if($item->product->media_files->isNotEmpty())
+                                <img src="{{ $item->product->media_files->first()->url }}" alt="{{ $item->product->nome }}" class="w-full h-full object-contain rounded">
                             @else
                                 <div class="w-full h-full bg-gray-200 flex items-center justify-center rounded">
                                     <span class="text-gray-400 text-xs">Sem foto</span>
