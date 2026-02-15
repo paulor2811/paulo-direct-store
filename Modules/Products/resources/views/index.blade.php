@@ -15,7 +15,7 @@
                     @foreach($products as $product)
                         <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden">
                             <!-- Image / Carousel Container -->
-                            <div class="aspect-h-1 aspect-w-1 w-full relative bg-gray-100 dark:bg-gray-700 h-64 sm:h-72">
+                            <div class="aspect-h-16 aspect-w-9 w-full relative bg-gray-100 dark:bg-gray-700">
                                 @if($product->images()->isNotEmpty())
                                     <div class="carousel relative w-full h-full overflow-hidden" x-data="{ activeSlide: 0, slides: {{ $product->images()->count() }} }">
                                         <!-- Slides -->
@@ -31,7 +31,7 @@
                                                 @php
                                                     $url = Str::startsWith($foto->caminho_imagem, 'http') ? $foto->caminho_imagem : $foto->url;
                                                 @endphp
-                                                <img src="{{ $url }}" alt="{{ $product->nome }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x400?text=Sem+Imagem';">
+                                                <img src="{{ $url }}" alt="{{ $product->nome }}" class="h-full w-full object-contain" onerror="this.onerror=null; this.src='https://placehold.co/400x400?text=Sem+Imagem';">
                                             </div>
                                         @endforeach
 
