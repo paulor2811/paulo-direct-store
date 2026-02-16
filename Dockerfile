@@ -22,6 +22,9 @@ WORKDIR /var/www
 # Copia os arquivos do projeto
 COPY . .
 
+# Instala dependências e gera os assets (CSS/JS)
+RUN npm install && npm run build
+
 # Garante a permissão ANTES de terminar o build
 # O caminho deve ser relativo ao WORKDIR se você copiou tudo
 RUN chmod +x docker/app/entrypoint.sh
