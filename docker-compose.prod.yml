@@ -10,6 +10,7 @@ services:
     volumes:
       - .:/var/www
       - /var/www/vendor
+      - /var/www/public/build
     networks:
       - paulodirect-network
     # Production optimization: Validate opcache settings in php.ini if possible

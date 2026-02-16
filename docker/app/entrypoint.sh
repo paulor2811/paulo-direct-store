@@ -9,9 +9,9 @@ else
     echo "Dependências já presentes. Pulando instalação."
 fi
 
-# Verifica se os assets do Vite existem
-if [ ! -d "public/build" ]; then
-    echo "Assets de produção (CSS/JS) não encontrados. Gerando..."
+# Verifica se os assets do Vite existem (manifest.json é o arquivo chave)
+if [ ! -f "public/build/manifest.json" ]; then
+    echo "FALHA: Assets de produção não encontrados em public/build/manifest.json. Gerando agora..."
     npm install && npm run build
 fi
 
