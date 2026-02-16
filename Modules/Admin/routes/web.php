@@ -31,4 +31,5 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/users', [\Modules\Admin\Http\Controllers\AdminUserController::class, 'index'])->name('users.index');
     Route::patch('/users/{id}/toggle-ban', [\Modules\Admin\Http\Controllers\AdminUserController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::patch('/users/{id}/silence', [\Modules\Admin\Http\Controllers\AdminUserController::class, 'silence'])->name('users.silence');
+    Route::patch('/users/{id}/toggle-admin', [\Modules\Admin\Http\Controllers\AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
 });

@@ -85,13 +85,25 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     @if($user->id !== auth()->id())
                                         <div class="flex flex-col gap-2">
-                                            <form action="{{ route('admin.users.toggle-ban', $user->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="{{ $user->is_banned ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900' }} transition-colors" onclick="return confirm('Tem certeza que deseja {{ $user->is_banned ? 'desbanir' : 'banir' }} este usuário?')">
-                                                    {{ $user->is_banned ? 'Desbanir' : 'Banir' }}
-                                                </button>
-                                            </form>
+                                            <div class="flex items-center gap-2">
+                                                {{-- Admin Toggle --}}
+                                                <form action="{{ route('admin.users.toggle-admin', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja alterar o status administrativo deste usuário?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="px-3 py-1 text-xs font-semibold rounded-full {{ $user->is_admin ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200' }}">
+                                                        {{ $user->is_admin ? 'Rebaixar' : 'Promover' }}
+                                                    </button>
+                                                </form>
+
+                                                {{-- Ban Toggle --}}
+                                                <form action="{{ route('admin.users.toggle-ban', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja alterar o status de acesso deste usuário?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="px-3 py-1 text-xs font-semibold rounded-full {{ $user->is_banned ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200' }}">
+                                                        {{ $user->is_banned ? 'Desbanir' : 'Banir' }}
+                                                    </button>
+                                                </form>
+                                            </div>
 
                                             <div class="border-t pt-2 mt-1">
                                                 <form action="{{ route('admin.users.silence', $user->id) }}" method="POST" class="flex items-center gap-1">

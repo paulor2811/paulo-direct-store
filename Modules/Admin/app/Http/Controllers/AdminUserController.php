@@ -75,4 +75,22 @@ class AdminUserController extends Controller
 
         return back()->with('success', $message);
     }
+
+    /**
+     * Toggle admin status for a user.
+     */
+    public function toggleAdmin($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Você não pode remover seu próprio acesso administrativo.');
+        }
+
+        $user->is_admin = !$user->is_admin;
+        $user->save();
+
+        $status = $user->is_admin ? 'promovido a administrador' : 'rebaixado a usuário comum';
+        return back()->with('success', "Usuário {$user->name} {$status} com sucesso!");
+    }
 }
