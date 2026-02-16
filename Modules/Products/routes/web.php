@@ -18,3 +18,13 @@ Route::resource('products', ProductsController::class)->names('products');
 Route::delete('products/{product}/images/{image}', [ProductsController::class, 'deleteImage'])
     ->middleware(['auth', 'verified'])
     ->name('products.images.delete');
+
+// Product Review Routes (authenticated users only)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('products/{product}/reviews', [Modules\Products\Http\Controllers\ReviewController::class, 'store'])->name('products.reviews.store');
+    Route::put('reviews/{review}', [Modules\Products\Http\Controllers\ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('reviews/{review}', [Modules\Products\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::patch('reviews/{review}/toggle-visibility', [Modules\Products\Http\Controllers\ReviewController::class, 'toggleVisibility'])
+        ->middleware(['is_admin'])
+        ->name('reviews.toggle-visibility');
+});

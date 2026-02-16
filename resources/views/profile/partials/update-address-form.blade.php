@@ -71,6 +71,62 @@
                     class="text-sm text-gray-600"
                 >{{ __('Saved.') }}</p>
             @endif
+
+            <span id="cep-loading" class="hidden text-sm text-primary-600 animate-pulse">
+                {{ __('Buscando CEP...') }}
+            </span>
         </div>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const zipInput = document.getElementById('zip_code');
+            const streetInput = document.getElementById('street');
+            const neighborhoodInput = document.getElementById('neighborhood');
+            const cityInput = document.getElementById('city');
+            const stateInput = document.getElementById('state');
+            const loadingIndicator = document.getElementById('cep-loading');
+
+            const handleCepInput = async () => {
+                const cep = zipInput.value.replace(/\D/g, '');
+                
+                if (cep.length === 8) {
+                    loadingIndicator.classList.remove('hidden');
+                    console.log('Buscando endereço para o CEP:', cep);
+                    
+                    try {
+                        const response = await fetch('/api/geolocation/calculate-shipping', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ cep: cep })
+                        });
+
+                        const data = await response.json();
+                        console.log('Dados recebidos:', data);
+
+                        if (response.ok) {
+                            if (data.street) streetInput.value = data.street;
+                            if (data.neighborhood) neighborhoodInput.value = data.neighborhood;
+                            if (data.city) cityInput.value = data.city;
+                            if (data.state) stateInput.value = data.state;
+                            
+                            // Foca no número após preencher
+                            const numberInput = document.getElementById('number');
+                            if (numberInput) numberInput.focus();
+                        }
+                    } catch (error) {
+                        console.error('Erro ao buscar CEP:', error);
+                    } finally {
+                        loadingIndicator.classList.add('hidden');
+                    }
+                }
+            };
+
+            zipInput.addEventListener('input', handleCepInput);
+            zipInput.addEventListener('change', handleCepInput);
+        });
+    </script>
 </section>

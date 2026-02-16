@@ -140,16 +140,32 @@
             </p>
 
             <div class="flex items-center gap-2 mt-2 sm:mt-0">
-               <!-- Stars/Reviews section kept static as placeholder since we don't have reviews logic yet -->
-               <div class="flex items-center gap-1">
-                   @for($i=0; $i<5; $i++)
-                    <svg class="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
-                    </svg>
-                   @endfor
-               </div>
-               <p class="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">(5.0)</p>
-               <a href="#" class="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white">345 Reviews</a>
+                @php
+                    $averageRating = round($product->average_rating, 1);
+                    $reviewsCount = $product->reviews_count;
+                    $fullStars = floor($averageRating);
+                    $hasHalfStar = ($averageRating - $fullStars) >= 0.5;
+                @endphp
+                
+                <div class="flex items-center gap-1">
+                    @for($i = 1; $i <= 5; $i++)
+                        @if($i <= $fullStars)
+                            <svg class="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+                            </svg>
+                        @elseif($i == $fullStars + 1 && $hasHalfStar)
+                            <svg class="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+                            </svg>
+                        @else
+                            <svg class="w-4 h-4 text-gray-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+                            </svg>
+                        @endif
+                    @endfor
+                </div>
+                <p class="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">({{ $averageRating }})</p>
+                <a href="#reviews-section" class="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white">{{ $reviewsCount }} {{ $reviewsCount == 1 ? 'Avaliação' : 'Avaliações' }}</a>
             </div>
           </div>
 
@@ -237,11 +253,15 @@
                         throw new Error(data.error || 'Erro ao calcular');
                     }
 
+                    if (data.price === null) {
+                        resultDiv.innerHTML = `<span class="text-red-500">Não foi possível calcular o frete para este CEP.</span>`;
+                        return;
+                    }
+
                     const priceFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.price);
                     
                     resultDiv.innerHTML = `
                         <div class="flex flex-col text-gray-700 dark:text-gray-300 mt-2 p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-600">
-                            <span><strong>Cidade:</strong> ${data.city}/${data.state}</span>
                             <span><strong>Distância:</strong> ${data.distance_km} km</span>
                             <span class="text-green-600 dark:text-green-400 mt-1"><strong>Frete Estimado: ${priceFormatted}</strong></span>
                         </div>
@@ -297,6 +317,9 @@
           </div>
       </div>
       @endif
+
+      {{-- Product Reviews Section --}}
+      @include('products::partials.reviews-section')
 
     </div>
   </section>

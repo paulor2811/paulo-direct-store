@@ -22,6 +22,7 @@ class Produto extends Model
         'modelo',
         'cor',
         'preco',
+        'is_active',
         'categoria_produto_id',
         'created_at',
     ];
@@ -31,6 +32,13 @@ class Produto extends Model
         static::creating(function ($model) {
             if (empty($model->created_at)) {
                 $model->created_at = time();
+            }
+        });
+
+        // Global scope to hide inactive products for regular users
+        static::addGlobalScope('active', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            if (!auth()->check() || !auth()->user()->is_admin) {
+                $builder->where('is_active', true);
             }
         });
     }
@@ -76,5 +84,29 @@ class Produto extends Model
     {
         $image = $this->mediaFiles()->where('file_type', 'product_image')->first();
         return $image ? $image->url : null;
+    }
+
+    /**
+     * Get all reviews for this product
+     */
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class, 'product_id');
+    }
+
+    /**
+     * Get average rating
+     */
+    public function getAverageRatingAttribute(): float
+    {
+        return $this->reviews()->avg('rating') ?? 0;
+    }
+
+    /**
+     * Get total reviews count
+     */
+    public function getReviewsCountAttribute(): int
+    {
+        return $this->reviews()->count();
     }
 }

@@ -12,9 +12,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100">
-    <div class="flex min-h-screen">
+    @include('layouts.navigation')
+    
+    <div class="flex" style="height: calc(100vh - 65px);">
         <!-- Sidebar -->
-        <aside class="w-64 flex-shrink-0 bg-white shadow-md">
+        <aside class="w-64 flex-shrink-0 bg-white shadow-md overflow-y-auto">
             <div class="p-6">
                 <h2 class="text-2xl font-bold text-gray-800">Painel Admin</h2>
             </div>
@@ -38,11 +40,14 @@
                         </a>
                     </div>
                 </div>
+                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800">
+                    Usuários
+                </a>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto bg-gray-100">
             <div class="py-6 px-4 sm:px-6 lg:px-8">
                 <div class="max-w-7xl mx-auto">
                     @isset($header)

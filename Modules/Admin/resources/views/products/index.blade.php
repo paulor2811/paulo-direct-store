@@ -99,6 +99,9 @@
                                                 @endif
                                             @endif
                                         </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
                                         <th scope="col" class="relative px-6 py-3">
                                             <span class="sr-only">Ações</span>
                                         </th>
@@ -139,8 +142,28 @@
                                             <td class="px-6 py-4 text-sm text-gray-500">
                                                 {{ \Carbon\Carbon::parse($produto->created_at)->format('d/m/Y') }}
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                @if($produto->is_active)
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        Ativo
+                                                    </span>
+                                                @else
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                        Inativo
+                                                    </span>
+                                                @endif
+                                            </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
                                                 <a href="{{ route('admin.products.edit', $produto->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
+                                                
+                                                <form action="{{ route('admin.products.toggle-status', $produto->id) }}" method="POST" class="inline mr-3">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="{{ $produto->is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900' }}">
+                                                        {{ $produto->is_active ? 'Ocultar' : 'Mostrar' }}
+                                                    </button>
+                                                </form>
+
                                                 <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
                                                     <x-slot name="trigger">
                                                         <button class="text-red-600 hover:text-red-900">Excluir</button>

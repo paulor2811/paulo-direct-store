@@ -29,6 +29,8 @@ class User extends Authenticatable
         'birthdate',
         'profile_photo_path',
         'is_admin',
+        'is_banned',
+        'silenced_until',
     ];
 
     /**
@@ -53,7 +55,21 @@ class User extends Authenticatable
             'password' => 'hashed',
             'birthdate' => 'date',
             'is_admin' => 'boolean',
+            'is_banned' => 'boolean',
+            'silenced_until' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if user is currently silenced
+     */
+    public function is_silenced(): bool
+    {
+        if (!$this->silenced_until) {
+            return false;
+        }
+
+        return $this->silenced_until->isFuture();
     }
 
     public function addresses()
@@ -84,5 +100,13 @@ class User extends Authenticatable
     {
         $photo = $this->profilePhoto();
         return $photo ? $photo->url : null;
+    }
+
+    /**
+     * Get all product reviews by this user
+     */
+    public function productReviews()
+    {
+        return $this->hasMany(\Modules\Products\Models\ProductReview::class);
     }
 }

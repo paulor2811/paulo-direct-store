@@ -226,4 +226,16 @@ class AdminProductController extends Controller
 
         return redirect()->route('products.show', $produto->id)->with('success', 'Produto atualizado com sucesso!');
     }
+    /**
+     * Toggle product active status
+     */
+    public function toggleStatus($id)
+    {
+        $produto = Produto::findOrFail($id);
+        $produto->is_active = !$produto->is_active;
+        $produto->save();
+
+        $status = $produto->is_active ? 'ativado' : 'desativado';
+        return back()->with('success', "Produto {$status} com sucesso!");
+    }
 }
