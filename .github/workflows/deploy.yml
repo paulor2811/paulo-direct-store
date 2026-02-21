@@ -21,6 +21,7 @@ jobs:
             cd /home/ec2-user/paulo-direct-store
             git pull origin main
             docker compose -f docker-compose.prod.yml up -d --build
+            docker exec paulodirect-app composer install --no-interaction --optimize-autoloader --no-dev
             docker exec paulodirect-app php artisan migrate --force
             docker exec paulodirect-app php artisan view:clear
             docker exec paulodirect-app php artisan route:clear
