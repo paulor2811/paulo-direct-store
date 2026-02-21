@@ -26,6 +26,19 @@ class ImageStorageService
     }
 
     /**
+     * Upload a logo for a store
+     */
+    public function uploadStoreLogo(Model $store, UploadedFile $file): MediaFile
+    {
+        // Delete existing logo if exists
+        $this->deleteAllForModel($store, 'store_logo');
+
+        $path = $this->generatePath('stores', $store->id, 'logo', $file->extension());
+        
+        return $this->storeFile($store, $file, $path, 'store_logo');
+    }
+
+    /**
      * Upload a product image
      */
     public function uploadProductImage(Model $product, UploadedFile $file): MediaFile

@@ -22,8 +22,11 @@ class Produto extends Model
         'modelo',
         'cor',
         'preco',
+        'condicao',
         'is_active',
         'categoria_produto_id',
+        'store_id',
+        'user_id',
         'created_at',
     ];
 
@@ -51,6 +54,22 @@ class Produto extends Model
     public function fotos()
     {
         return $this->hasMany(FotoProduto::class, 'produto_id');
+    }
+
+    /**
+     * Get the store this product belongs to (if any)
+     */
+    public function store()
+    {
+        return $this->belongsTo(\Modules\Stores\Models\Store::class);
+    }
+
+    /**
+     * Get the user who owns this product
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     /**

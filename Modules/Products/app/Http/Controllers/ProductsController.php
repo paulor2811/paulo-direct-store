@@ -22,11 +22,46 @@ class ProductsController extends Controller implements HasMiddleware
     {
         $query = Produto::with('fotos');
 
+        // Filter by category
         if ($request->has('category') && $request->category) {
             $query->where('categoria_produto_id', $request->category);
         }
 
-        $products = $query->paginate(12);
+        // Filter by condition
+        if ($request->has('condition') && $request->condition) {
+            $query->where('condicao', $request->condition);
+        }
+
+        // Filter by Price Range
+        if ($request->filled('min_price')) {
+            $query->where('preco', '>=', $request->min_price);
+        }
+        if ($request->filled('max_price')) {
+            $query->where('preco', '<=', $request->max_price);
+        }
+
+        // Advanced Search (unaccent & ILIKE)
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->search . '%';
+            $query->whereRaw('unaccent(nome) ILIKE unaccent(?)', [$searchTerm]);
+        }
+
+        // Sorting
+        $sort = $request->get('sort', 'recente');
+        switch ($sort) {
+            case 'preco_asc':
+                $query->orderBy('preco', 'asc');
+                break;
+            case 'preco_desc':
+                $query->orderBy('preco', 'desc');
+                break;
+            case 'recente':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->withQueryString();
 
         return view('products::index', compact('products'));
     }
@@ -45,12 +80,17 @@ class ProductsController extends Controller implements HasMiddleware
             'modelo' => 'nullable|string|max:255',
             'cor' => 'nullable|string|max:100',
             'preco' => 'required|numeric|min:0',
-            'categoria_produto_id' => 'required|exists:categoria_produtos,id',
+            'condicao' => 'required|string|in:novo,seminovo,usado,sucata',
+            'categoria_produto_id' => 'required|exists:categorias_produtos,id',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
         ]);
 
-        $product = Produto::create($validated);
+        $data = $validated;
+        $data['user_id'] = auth()->id();
+        $data['store_id'] = session('active_store_id');
+
+        $product = Produto::create($data);
 
         // Upload images to S3
         if ($request->hasFile('images')) {
@@ -66,7 +106,7 @@ class ProductsController extends Controller implements HasMiddleware
 
     public function show($id)
     {
-        $product = Produto::with('fotos')->findOrFail($id);
+        $product = Produto::with(['fotos', 'store', 'user'])->findOrFail($id);
         $relatedProducts = Produto::with('fotos')
             ->where('id', '!=', $id)
             ->inRandomOrder()
@@ -95,7 +135,8 @@ class ProductsController extends Controller implements HasMiddleware
             'modelo' => 'nullable|string|max:255',
             'cor' => 'nullable|string|max:100',
             'preco' => 'required|numeric|min:0',
-            'categoria_produto_id' => 'required|exists:categoria_produtos,id',
+            'condicao' => 'required|string|in:novo,seminovo,usado,sucata',
+            'categoria_produto_id' => 'required|exists:categorias_produtos,id',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
             'delete_images' => 'nullable|array',

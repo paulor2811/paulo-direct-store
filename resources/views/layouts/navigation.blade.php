@@ -61,6 +61,9 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Perfil') }}
                         </x-dropdown-link>
+                        <x-dropdown-link :href="route('stores.index')">
+                            {{ __('Minhas Lojas') }}
+                        </x-dropdown-link>
                         <x-dropdown-link :href="route('profile.account')">
                             {{ __('Minha Conta') }}
                         </x-dropdown-link>
@@ -84,6 +87,27 @@
                 <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-lg transition-colors">Criar Conta</a>
             </li>
         @endauth
+        @auth
+            <!-- Active Store Indicator (Desktop) -->
+            @php $activeStoreId = session('active_store_id'); @endphp
+            @if($activeStoreId)
+                @php $activeStore = \Modules\Stores\Models\Store::find($activeStoreId); @endphp
+                @if($activeStore)
+                    <li class="hidden lg:flex items-center px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                        <span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse mr-2"></span>
+                        <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Loja: {{ $activeStore->nome }}</span>
+                    </li>
+                @endif
+            @endif
+            
+            <!-- Create Ad Button (Desktop) -->
+            <li class="hidden sm:block">
+                <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-xs font-black rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-500/20 transition-all active:scale-95 uppercase tracking-widest">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Anunciar
+                </a>
+            </li>
+        @endauth
           </ul>
         </div>
 
@@ -102,6 +126,25 @@
   <!-- Responsive Navigation Menu -->
   <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
     <div class="pt-2 pb-3 space-y-1">
+        @auth
+            <!-- Mobile Active Store & Create Ad -->
+            <div class="px-4 py-3 mb-2 bg-gray-50 dark:bg-gray-900/50 rounded-xl mx-2 border border-gray-100 dark:border-gray-800">
+                @php $activeStoreId = session('active_store_id'); @endphp
+                @if($activeStoreId)
+                    @php $activeStore = \Modules\Stores\Models\Store::find($activeStoreId); @endphp
+                    @if($activeStore)
+                        <div class="flex items-center mb-3">
+                            <span class="flex h-2 w-2 rounded-full bg-indigo-500 mr-2"></span>
+                            <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Loja: {{ $activeStore->nome }}</span>
+                        </div>
+                    @endif
+                @endif
+                <a href="{{ route('products.create') }}" class="flex items-center justify-center w-full py-3 bg-primary-600 text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-primary-500/20">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Anunciar Agora
+                </a>
+            </div>
+        @endauth
         <a href="{{ route('products.index') }}" class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out">
             Vitrine
         </a>
@@ -129,6 +172,9 @@
 
                     <x-responsive-nav-link :href="route('profile.edit')">
                         {{ __('Perfil') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('stores.index')">
+                        {{ __('Minhas Lojas') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('profile.account')">
                         {{ __('Minha Conta') }}

@@ -1,10 +1,24 @@
-@extends('products::components.layouts.master')
-
-@section('content')
+<x-products::layouts.master>
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Criar Novo Produto</h1>
         <p class="mt-2 text-sm text-gray-600">Adicione um novo produto ao marketplace</p>
+        
+        @auth
+            <div class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                <span class="flex h-2 w-2 rounded-full bg-indigo-500 mr-2"></span>
+                <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-widest">
+                    Postando como: 
+                    @if(session('active_store_id'))
+                        @php $activeStore = \Modules\Stores\Models\Store::find(session('active_store_id')); @endphp
+                        {{ $activeStore ? $activeStore->nome : 'Pessoa Física' }}
+                    @else
+                        Pessoa Física
+                    @endif
+                </span>
+                <a href="{{ route('stores.index') }}" class="ml-4 text-[10px] font-black text-primary-600 hover:underline uppercase tracking-tighter">Trocar</a>
+            </div>
+        @endauth
     </div>
 
     <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-sm rounded-lg p-6 space-y-6">
@@ -60,6 +74,21 @@
                 <input type="number" step="0.01" min="0" name="preco" id="preco" required value="{{ old('preco') }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('preco') border-red-500 @enderror">
                 @error('preco')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Condition --}}
+            <div>
+                <label for="condicao" class="block text-sm font-medium text-gray-700">Condição *</label>
+                <select name="condicao" id="condicao" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('condicao') border-red-500 @enderror">
+                    <option value="novo" {{ old('condicao') == 'novo' ? 'selected' : '' }}>Novo</option>
+                    <option value="seminovo" {{ old('condicao') == 'seminovo' ? 'selected' : '' }}>Seminovo</option>
+                    <option value="usado" {{ old('condicao') == 'usado' ? 'selected' : '' }}>Usado</option>
+                    <option value="sucata" {{ old('condicao') == 'sucata' ? 'selected' : '' }}>Sucata</option>
+                </select>
+                @error('condicao')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -143,4 +172,4 @@ function previewImages(event) {
     });
 }
 </script>
-@endsection
+</x-products::layouts.master>

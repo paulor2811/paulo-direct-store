@@ -20,3 +20,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/{username}', [App\Http\Controllers\PublicProfileController::class, 'show'])
+    ->name('public.profile')
+    ->where('username', '^(?!login|register|admin|logout|products|dashboard|loja|stores|profile|account|cart).*$');

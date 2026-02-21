@@ -1,6 +1,4 @@
-@extends('products::components.layouts.master')
-
-@section('content')
+<x-products::layouts.master>
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Editar Produto</h1>
@@ -61,6 +59,21 @@
                 <input type="number" step="0.01" min="0" name="preco" id="preco" required value="{{ old('preco', $product->preco) }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('preco') border-red-500 @enderror">
                 @error('preco')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Condition --}}
+            <div>
+                <label for="condicao" class="block text-sm font-medium text-gray-700">Condição *</label>
+                <select name="condicao" id="condicao" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('condicao') border-red-500 @enderror">
+                    <option value="novo" {{ old('condicao', $product->condicao) == 'novo' ? 'selected' : '' }}>Novo</option>
+                    <option value="seminovo" {{ old('condicao', $product->condicao) == 'seminovo' ? 'selected' : '' }}>Seminovo</option>
+                    <option value="usado" {{ old('condicao', $product->condicao) == 'usado' ? 'selected' : '' }}>Usado</option>
+                    <option value="sucata" {{ old('condicao', $product->condicao) == 'sucata' ? 'selected' : '' }}>Sucata</option>
+                </select>
+                @error('condicao')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -203,4 +216,4 @@ function previewNewImages(event) {
     });
 }
 </script>
-@endsection
+</x-products::layouts.master>

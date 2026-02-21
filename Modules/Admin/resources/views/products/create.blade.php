@@ -38,7 +38,13 @@
                             <x-text-input id="nome" name="nome" type="text" class="mt-1 block w-full" :value="old('nome', $produto->nome ?? '')" required autofocus />
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Descrição -->
+                        <div>
+                            <x-input-label for="descricao" :value="__('Descrição')" />
+                            <textarea id="descricao" name="descricao" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('descricao', $produto->descricao ?? '') }}</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- Marca -->
                             <div>
                                 <x-input-label for="marca" :value="__('Marca')" />
@@ -50,33 +56,43 @@
                                 <x-input-label for="modelo" :value="__('Modelo')" />
                                 <x-text-input id="modelo" name="modelo" type="text" class="mt-1 block w-full" :value="old('modelo', $produto->modelo ?? '')" required />
                             </div>
-                        </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <!-- Cor -->
-                             <div>
+                            <!-- Cor -->
+                            <div>
                                 <x-input-label for="cor" :value="__('Cor')" />
                                 <x-text-input id="cor" name="cor" type="text" class="mt-1 block w-full" :value="old('cor', $produto->cor ?? '')" required />
                             </div>
+                        </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- Preço -->
                             <div>
                                 <x-input-label for="preco" :value="__('Preço')" />
                                 <x-text-input id="preco" name="preco" type="number" step="0.01" class="mt-1 block w-full" :value="old('preco', $produto->preco ?? '')" required />
                             </div>
-                        </div>
 
-                        <!-- Categoria -->
-                        <div>
-                            <x-input-label for="categoria_produto_id" :value="__('Categoria')" />
-                            <select id="categoria_produto_id" name="categoria_produto_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="">Selecione uma categoria</option>
-                                @foreach($categorias as $categoria)
-                                    <option value="{{ $categoria->id }}" {{ old('categoria_produto_id', $produto->categoria_produto_id ?? '') == $categoria->id ? 'selected' : '' }}>
-                                        {{ $categoria->nome }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <!-- Condição -->
+                            <div>
+                                <x-input-label for="condicao" :value="__('Condição')" />
+                                <select id="condicao" name="condicao" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                    <option value="novo" {{ old('condicao', $produto->condicao ?? 'novo') == 'novo' ? 'selected' : '' }}>Novo</option>
+                                    <option value="usado" {{ old('condicao', $produto->condicao ?? '') == 'usado' ? 'selected' : '' }}>Usado</option>
+                                    <option value="sucata" {{ old('condicao', $produto->condicao ?? '') == 'sucata' ? 'selected' : '' }}>Sucata</option>
+                                </select>
+                            </div>
+
+                            <!-- Categoria -->
+                            <div>
+                                <x-input-label for="categoria_produto_id" :value="__('Categoria')" />
+                                <select id="categoria_produto_id" name="categoria_produto_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                    <option value="">Selecione uma categoria</option>
+                                    @foreach($categorias as $categoria)
+                                        <option value="{{ $categoria->id }}" {{ old('categoria_produto_id', $produto->categoria_produto_id ?? '') == $categoria->id ? 'selected' : '' }}>
+                                            {{ $categoria->nome }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Fotos -->
@@ -189,14 +205,6 @@
                                 }
                             </script>
                         </div>
-
-                        <!-- Descrição -->
-                        <div>
-                            <x-input-label for="descricao" :value="__('Descrição')" />
-                            <textarea id="descricao" name="descricao" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('descricao', $produto->descricao ?? '') }}</textarea>
-                        </div>
-
-
                         <div class="flex items-center gap-4">
                             <x-primary-button>{{ isset($produto) ? __('Salvar Alterações') : __('Criar Anúncio') }}</x-primary-button>
                         </div>

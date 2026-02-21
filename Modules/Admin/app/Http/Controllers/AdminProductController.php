@@ -111,8 +111,8 @@ class AdminProductController extends Controller
             'modelo' => 'required|string|max:255',
             'cor' => 'required|string|max:255',
             'preco' => 'required|numeric|min:0',
+            'condicao' => 'required|string|in:novo,usado,sucata',
             'categoria_produto_id' => 'required|exists:categorias_produtos,id',
-            'descricao' => 'nullable|string',
             'descricao' => 'nullable|string',
             'fotos' => 'nullable|array|max:5',
             'fotos.*' => 'image|max:2048', // 2MB Max per image
@@ -124,6 +124,7 @@ class AdminProductController extends Controller
             'modelo' => $validated['modelo'],
             'cor' => $validated['cor'],
             'preco' => $validated['preco'],
+            'condicao' => $validated['condicao'],
             'categoria_produto_id' => $validated['categoria_produto_id'],
             'descricao' => $validated['descricao'] ?? null,
         ]);
@@ -168,6 +169,7 @@ class AdminProductController extends Controller
             'modelo' => 'required|string|max:255',
             'cor' => 'required|string|max:255',
             'preco' => 'required|numeric|min:0',
+            'condicao' => 'required|string|in:novo,usado,sucata',
             'categoria_produto_id' => 'required|exists:categorias_produtos,id',
             'descricao' => 'nullable|string',
             'fotos' => 'nullable|array|max:5',
@@ -182,6 +184,7 @@ class AdminProductController extends Controller
             'modelo' => $validated['modelo'],
             'cor' => $validated['cor'],
             'preco' => $validated['preco'],
+            'condicao' => $validated['condicao'],
             'categoria_produto_id' => $validated['categoria_produto_id'],
             'descricao' => $validated['descricao'] ?? null,
         ]);

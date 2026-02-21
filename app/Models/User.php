@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'cpf',
         'phone',
@@ -75,6 +76,14 @@ class User extends Authenticatable
     public function addresses()
     {
         return $this->hasMany(UserAddress::class);
+    }
+
+    /**
+     * Get all stores owned by this user
+     */
+    public function stores()
+    {
+        return $this->hasMany(\Modules\Stores\Models\Store::class);
     }
 
     /**

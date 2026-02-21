@@ -1,5 +1,6 @@
 {
     "Products": true,
     "Geolocation": true,
-    "Admin": true
+    "Admin": true,
+    "Stores": true
 }
