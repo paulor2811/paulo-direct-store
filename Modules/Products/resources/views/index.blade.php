@@ -2,9 +2,14 @@
     <section class="py-8 bg-gray-50 md:py-12 dark:bg-gray-900 min-h-screen">
         <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0">
             <div class="mb-8 text-center sm:mb-12">
-                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                    Nossos Produtos
-                </h1>
+                <div class="flex items-center justify-center gap-4">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+                        Nossos Produtos
+                    </h1>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                        Staging v1.0.2
+                    </span>
+                </div>
                 <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
                     Confira as melhores ofertas
                 </p>
