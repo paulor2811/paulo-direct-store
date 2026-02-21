@@ -1,13 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('PauloDirect Store') }}
-            </h2>
-            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                Staging v1.0.1
-            </span>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('PauloDirect Store') }}
+        </h2>
     </x-slot>
 
     <div class="py-12">
