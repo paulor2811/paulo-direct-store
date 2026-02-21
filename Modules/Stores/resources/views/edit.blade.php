@@ -72,7 +72,7 @@
                                        class="w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white font-bold focus:ring-primary-500 focus:border-primary-500 pl-10 p-4 transition-all"
                                        placeholder="pauloautopecas">
                             </div>
-                            <p class="mt-2 text-[10px] text-gray-400 font-medium">Sua loja é acessível em: <strong>paulodirect.local/loja/{{ $store->username }}</strong></p>
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">Sua loja é acessível em: <strong>directmarketplacebrazil.local/loja/{{ $store->username }}</strong></p>
                             @error('username') <p class="mt-2 text-xs text-red-500 font-bold uppercase tracking-wider">{{ $message }}</p> @enderror
                         </div>
 

@@ -9,8 +9,8 @@
                         <svg class='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'></path></svg>
                     </div>
                     <div class='flex flex-col'>
-                        <span class='self-center text-xl font-extrabold whitespace-nowrap tracking-wide text-gray-900 dark:text-white uppercase leading-none'>Paulo<span class='text-primary-600'>Direct</span></span>
-                        <span class='text-[0.6rem] text-gray-500 uppercase tracking-[0.2em] leading-none text-right'>Store</span>
+                        <span class='self-center text-xl font-extrabold whitespace-nowrap tracking-wide text-gray-900 dark:text-white uppercase leading-none'>Direct<span class='text-primary-600'>Marketplace</span></span>
+                        <span class='text-[0.6rem] text-gray-500 uppercase tracking-[0.2em] leading-none text-right'>Brazil</span>
                     </div>
                 </a>
             </div>

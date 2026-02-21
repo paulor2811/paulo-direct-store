@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('PauloDirect Store') }}
+            {{ __('DirectMarketplaceBrazil') }}
         </h2>
     </x-slot>
 
@@ -11,7 +11,7 @@
               <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0">
                 <div class="mb-4 items-end justify-between space-y-4 sm:flex sm:space-y-0 md:mb-8">
                   <div>
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Lançamentos PauloDirect</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Lançamentos DirectMarketplaceBrazil</h2>
                   </div>
                 </div>
 

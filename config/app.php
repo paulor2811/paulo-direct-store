@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'site_name' => env('APP_SITE_NAME', 'PauloDirect'),
+    'site_name' => env('APP_SITE_NAME', 'DirectMarketplaceBrazil'),
 
     /*
     |--------------------------------------------------------------------------
