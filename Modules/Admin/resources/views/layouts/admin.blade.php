@@ -11,12 +11,15 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-100">
+<body class="font-sans antialiased bg-gray-100" x-data="{ sidebarOpen: false }">
     @include('layouts.navigation')
     
-    <div class="flex" style="height: calc(100vh - 65px);">
+    <div class="flex overflow-hidden relative" style="height: calc(100vh - 65px);">
+        <!-- Mobile sidebar backdrop -->
+        <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden" @click="sidebarOpen = false"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 flex-shrink-0 bg-white shadow-md overflow-y-auto">
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="absolute z-30 inset-y-0 left-0 w-64 lg:static lg:translate-x-0 transform transition-transform duration-300 ease-in-out flex-shrink-0 bg-white shadow-md overflow-y-auto">
             <div class="p-6">
                 <h2 class="text-2xl font-bold text-gray-800">Painel Admin</h2>
             </div>
@@ -47,14 +50,21 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto bg-gray-100">
+        <main class="flex-1 overflow-y-auto bg-gray-100 min-w-0">
             <div class="py-6 px-4 sm:px-6 lg:px-8">
                 <div class="max-w-7xl mx-auto">
-                    @isset($header)
-                        <div class="mb-6">
-                            {{ $header }}
-                        </div>
-                    @endisset
+                    <div class="flex items-center mb-6">
+                        <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-3">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        @isset($header)
+                            <div class="flex-1 min-w-0 truncate">
+                                {{ $header }}
+                            </div>
+                        @endisset
+                    </div>
                     
                     {{ $slot }}
                 </div>

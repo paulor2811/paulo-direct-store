@@ -67,7 +67,7 @@
 
             <!-- Table -->
             <div class="mt-6">
-                <div class="shadow overflow-hidden border border-gray-200 rounded-lg">
+                <div class="shadow overflow-x-auto border border-gray-200 rounded-lg">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -154,22 +154,25 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                <a href="{{ route('admin.products.edit', $produto->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
-                                                
-                                                <form action="{{ route('admin.products.toggle-status', $produto->id) }}" method="POST" class="inline mr-3">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="{{ $produto->is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900' }}">
-                                                        {{ $produto->is_active ? 'Ocultar' : 'Mostrar' }}
-                                                    </button>
-                                                </form>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <a href="{{ route('admin.products.edit', $produto->id) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                                                    
+                                                    <form action="{{ route('admin.products.toggle-status', $produto->id) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="{{ $produto->is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900' }}">
+                                                            {{ $produto->is_active ? 'Ocultar' : 'Mostrar' }}
+                                                        </button>
+                                                    </form>
 
-                                                <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
-                                                    <x-slot name="trigger">
-                                                        <button class="text-red-600 hover:text-red-900">Excluir</button>
-                                                    </x-slot>
-                                                </x-modal-delete-confirmation>
-                                                <a href="{{ route('products.show', $produto->id) }}" class="text-gray-600 hover:text-gray-900 ml-3" target="_blank">Ver</a>
+                                                    <x-modal-delete-confirmation action="{{ route('admin.products.destroy', $produto->id) }}" title="Excluir produto {{ $produto->nome }}?">
+                                                        <x-slot name="trigger">
+                                                            <button type="button" class="text-red-600 hover:text-red-900">Excluir</button>
+                                                        </x-slot>
+                                                    </x-modal-delete-confirmation>
+                                                    
+                                                    <a href="{{ route('products.show', $produto->id) }}" class="text-gray-600 hover:text-gray-900" target="_blank">Ver</a>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
