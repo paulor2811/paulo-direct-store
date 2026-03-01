@@ -130,8 +130,8 @@
 
         {{-- New Images Upload --}}
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Adicionar Novas Imagens</label>
-            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Adicionar Novas Imagens (Até 5 fotos totais)</label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition" id="dropzone">
                 <div class="space-y-1 text-center">
                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -139,7 +139,7 @@
                     <div class="flex text-sm text-gray-600">
                         <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
                             <span>Upload de imagens</span>
-                            <input id="images" name="images[]" type="file" class="sr-only" multiple accept="image/*" onchange="previewNewImages(event)">
+                            <input id="images" name="images[]" type="file" class="sr-only" multiple accept="image/*" onchange="addNewImages(event)">
                         </label>
                         <p class="pl-1">ou arraste e solte</p>
                     </div>
@@ -151,7 +151,7 @@
             @enderror
 
             {{-- New Images Preview --}}
-            <div id="new-image-preview" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            <div id="new-image-preview" class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4"></div>
         </div>
 
         {{-- Submit Buttons --}}
@@ -169,6 +169,9 @@
 <script>
 // Track images to delete
 const imagesToDelete = new Set();
+let newFiles = [];
+const maxImages = 5;
+const currentImagesCount = {{ $currentImages->count() }};
 
 function markForDeletion(imageId) {
     imagesToDelete.add(imageId);
@@ -196,24 +199,82 @@ function unmarkForDeletion(imageId) {
     if (input) input.remove();
 }
 
-function previewNewImages(event) {
-    const preview = document.getElementById('new-image-preview');
-    preview.innerHTML = '';
-    const files = event.target.files;
+function addNewImages(event) {
+    const files = Array.from(event.target.files);
+    const totalCurrent = currentImagesCount - imagesToDelete.size + newFiles.length;
+    
+    if (totalCurrent + files.length > maxImages) {
+        alert(`O produto pode ter no máximo ${maxImages} imagens totais.`);
+        event.target.value = '';
+        return;
+    }
 
-    Array.from(files).forEach((file, index) => {
+    files.forEach(file => {
+        if (!newFiles.some(f => f.name === file.name && f.size === file.size)) {
+            newFiles.push(file);
+        }
+    });
+
+    renderNewPreviews();
+    event.target.value = '';
+}
+
+function removeNewImage(index) {
+    newFiles.splice(index, 1);
+    renderNewPreviews();
+}
+
+function renderNewPreviews() {
+    const previewContainer = document.getElementById('new-image-preview');
+    previewContainer.innerHTML = '';
+
+    newFiles.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = function(e) {
             const div = document.createElement('div');
             div.className = 'relative group';
             div.innerHTML = `
                 <img src="${e.target.result}" class="h-32 w-full object-cover rounded-lg shadow-sm border-2 border-green-500" alt="Nova imagem ${index + 1}">
-                <div class="absolute top-1 right-1 bg-green-500 text-white text-xs px-2 py-1 rounded">Nova</div>
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition rounded-lg flex items-center justify-center">
+                    <button type="button" onclick="removeNewImage(${index})" class="bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <div class="absolute top-1 right-1 bg-green-500 text-white text-[10px] px-2 py-0.5 rounded">Nova</div>
+                </div>
             `;
-            preview.appendChild(div);
+            previewContainer.appendChild(div);
         }
         reader.readAsDataURL(file);
     });
 }
+
+// Sync files with form on submit
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => dataTransfer.items.add(file));
+    document.getElementById('images').files = dataTransfer.files;
+});
+
+// Simple Drag & Drop support
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('border-indigo-500', 'bg-indigo-50');
+});
+dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('border-indigo-500', 'bg-indigo-50');
+});
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('border-indigo-500', 'bg-indigo-50');
+    
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    const event = { target: { files: files } };
+    addNewImages(event);
+});
 </script>
 </x-products::layouts.master>

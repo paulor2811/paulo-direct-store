@@ -1,5 +1,5 @@
 services:
-  app:
+  laravel-app:
     entrypoint: sh /var/www/docker/app/entrypoint.sh
     build:
       context: .
@@ -41,7 +41,7 @@ services:
     networks:
       - paulodirect-network
     depends_on:
-      - app
+      - laravel-app
 
   portainer:
     image: portainer/portainer-ce:latest

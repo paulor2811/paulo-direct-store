@@ -27,4 +27,9 @@ class CategoriaProduto extends Model
             }
         });
     }
+
+    public function produtos()
+    {
+        return $this->hasMany(Produto::class, 'categoria_produto_id');
+    }
 }

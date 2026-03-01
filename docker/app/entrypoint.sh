@@ -1,13 +1,8 @@
 #!/bin/sh
 cd /var/www
 
-# Verifica se a pasta vendor está vazia (ls -A retorna conteúdo)
-if [ ! -d "vendor" ] || [ -z "$(ls -A vendor)" ]; then
-    echo "A pasta vendor está ausente ou vazia. Iniciando instalação..."
-    composer install --no-interaction --optimize-autoloader
-else
-    echo "Dependências já presentes. Pulando instalação."
-fi
+# Dependências já estão no build, mas garantimos permissões
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Verifica se os assets do Vite existem (manifest.json é o arquivo chave)
 if [ ! -f "public/build/manifest.json" ]; then
@@ -16,4 +11,9 @@ if [ ! -f "public/build/manifest.json" ]; then
 fi
 
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+# Roda as migrations automaticamente
+echo "Rodando migrations..."
+php artisan migrate --force
+
 exec php-fpm

@@ -6,14 +6,8 @@
         <meta name='csrf-token' content='{{ csrf_token() }}'>
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
 
-        <title>DirectMarketplaceBrazil - {{ config('app.name', 'Laravel') }}</title>
-
-        <meta name='description' content='{{ $description ?? 'Sua loja de eletrônicos e ferramentas' }}'>
-        <meta name='keywords' content='{{ $keywords ?? 'eletrônicos, ferramentas, multímetro' }}'>
-        <meta name='author' content='{{ $author ?? 'DirectMarketplaceBrazil' }}'>
-
-        <link rel='preconnect' href='https://fonts.bunny.net'>
-        <link href='https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap' rel='stylesheet' />
+        <title>{{ config('app.name') }}</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
         {{-- Vite CSS & JS --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])

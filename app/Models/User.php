@@ -8,11 +8,30 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
+
+    protected static function booted()
+    {
+        static::saving(function ($user) {
+            if (!$user->username) {
+                $username = Str::slug($user->name);
+                
+                // Ensure unique username
+                $count = 1;
+                while (static::where('username', $username)->exists()) {
+                    $username = Str::slug($user->name) . $count;
+                    $count++;
+                }
+                
+                $user->username = $username;
+            }
+        });
+    }
 
     /**
      * The attributes that are mass assignable.

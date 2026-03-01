@@ -172,7 +172,7 @@
           @php
               $vendorUrl = ($product->store_id && $product->store) 
                   ? route('stores.public.show', $product->store->username) 
-                  : route('public.profile', $product->user->username ?? 'paulo');
+                  : route('public.profile', $product->user->username);
           @endphp
           
           <a href="{{ $vendorUrl }}" class="mt-6 flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-primary-500/30 hover:bg-white dark:hover:bg-gray-800 transition-all group">

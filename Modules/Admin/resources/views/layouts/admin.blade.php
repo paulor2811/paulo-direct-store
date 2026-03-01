@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.site_name', 'Laravel') }} - Admin</title>
+    <title>{{ config('app.name') }}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -43,6 +44,9 @@
                         </a>
                     </div>
                 </div>
+                <a href="{{ route('admin.categories.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800">
+                    Categorias
+                </a>
                 <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800">
                     Usuários
                 </a>
