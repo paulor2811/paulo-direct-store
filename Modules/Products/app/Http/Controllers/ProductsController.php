@@ -68,7 +68,17 @@ class ProductsController extends Controller implements HasMiddleware
 
     public function create()
     {
-        return view('products::create');
+        // Enforce phone and address requirement for independent sellers
+        $activeStoreId = session('active_store_id');
+        $missingPhone = false;
+        $missingAddress = false;
+
+        if (!$activeStoreId) {
+            $missingPhone = !auth()->user()->phone;
+            $missingAddress = !auth()->user()->addresses()->exists();
+        }
+
+        return view('products::create', compact('missingPhone', 'missingAddress'));
     }
 
     public function store(Request $request)
@@ -82,6 +92,9 @@ class ProductsController extends Controller implements HasMiddleware
             'preco' => 'required|numeric|min:0',
             'condicao' => 'required|string|in:novo,seminovo,usado,sucata',
             'categoria_produto_id' => 'required|exists:categorias_produtos,id',
+            'shipping_price_per_km' => 'nullable|numeric|min:0',
+            'shipping_origin_lat' => 'nullable|string',
+            'shipping_origin_lon' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
         ]);
@@ -89,6 +102,11 @@ class ProductsController extends Controller implements HasMiddleware
         $data = $validated;
         $data['user_id'] = auth()->id();
         $data['store_id'] = session('active_store_id');
+
+        // Enforce phone and address requirement for independent sellers on POST as well
+        if (!$data['store_id'] && (!auth()->user()->phone || !auth()->user()->addresses()->exists())) {
+            return redirect()->route('profile.edit')->with('error', 'Você precisa cadastrar um número de Telefone/WhatsApp e o seu Endereço no Perfil antes de publicar anúncios.');
+        }
 
         $product = Produto::create($data);
 
@@ -137,6 +155,9 @@ class ProductsController extends Controller implements HasMiddleware
             'preco' => 'required|numeric|min:0',
             'condicao' => 'required|string|in:novo,seminovo,usado,sucata',
             'categoria_produto_id' => 'required|exists:categorias_produtos,id',
+            'shipping_price_per_km' => 'nullable|numeric|min:0',
+            'shipping_origin_lat' => 'nullable|string',
+            'shipping_origin_lon' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
             'delete_images' => 'nullable|array',

@@ -21,7 +21,7 @@
                 $userReview = $product->reviews()->where('user_id', auth()->id())->first();
             @endphp
             
-            @if(!$userReview)
+            @if(!$userReview && $product->user_id !== auth()->id())
                 <div class="mb-8 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                     <h3 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Avaliar este produto</h3>
                     <form action="{{ route('products.reviews.store', $product->id) }}" method="POST">
@@ -73,13 +73,22 @@
                 <article class="p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-4">
+                            @if($review->user->profile_photo_url)
+                                <img class="w-10 h-10 rounded-full object-cover shrink-0" src="{{ $review->user->profile_photo_url }}" alt="{{ $review->user->name }}">
+                            @else
+                                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold shrink-0">
+                                    {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                                </div>
+                            @endif
                             <div>
                                 @if(auth()->check() && auth()->user()->is_admin)
-                                    <button onclick="openModerationModal({{ $review->user_id }}, '{{ addslashes($review->user->name) }}', {{ $review->user->is_banned ? 'true' : 'false' }}, '{{ $review->user->silenced_until ? $review->user->silenced_until->format('Y-m-d H:i') : '' }}')" class="text-lg font-semibold text-primary-600 hover:underline dark:text-primary-400">
+                                    <button onclick="openModerationModal({{ $review->user_id }}, '{{ addslashes($review->user->name) }}', '{{ $review->user->username }}', {{ $review->user->is_banned ? 'true' : 'false' }}, '{{ $review->user->silenced_until ? $review->user->silenced_until->format('Y-m-d H:i') : '' }}')" class="text-lg font-semibold text-primary-600 hover:underline dark:text-primary-400">
                                         {{ $review->user->name }}
                                     </button>
                                 @else
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $review->user->name }}</h3>
+                                    <a href="{{ route('public.profile', $review->user->username) }}" class="text-lg font-semibold text-gray-900 hover:text-primary-600 hover:underline dark:text-white dark:hover:text-primary-400">
+                                        {{ $review->user->name }}
+                                    </a>
                                 @endif
                                 <div class="flex items-center gap-2">
                                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ $review->created_at->format('d/m/Y') }}</p>
@@ -150,8 +159,11 @@
     {{-- Moderation Modal --}}
     <div id="moderationModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[60]">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full dark:bg-gray-800">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Moderação: <span id="mod-user-name"></span></h3>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Moderação: <span id="mod-user-name"></span></h3>
+                    <a id="mod-user-profile-link" href="#" class="text-sm font-medium text-primary-600 hover:underline">Ir para o perfil do usuário &rarr;</a>
+                </div>
                 <button onclick="closeModerationModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
 
@@ -160,9 +172,14 @@
                 <div class="p-4 bg-red-50 rounded-lg dark:bg-red-900/20">
                     <h4 class="text-sm font-bold text-red-800 dark:text-red-400 uppercase mb-2">Banimento</h4>
                     <p class="text-xs text-red-600 dark:text-red-300 mb-3">Usuários banidos são desconectados e perdem acesso à conta.</p>
-                    <form id="mod-ban-form" method="POST">
+                    <form id="mod-ban-form" method="POST" onsubmit="return confirmBan(event)">
                         @csrf
                         @method('PATCH')
+                        <div id="ban-confirm-container" class="mb-3">
+                            <label class="block text-xs font-medium text-red-700 dark:text-red-400 mb-1">Digite <strong>banir</strong> para confirmar:</label>
+                            <input type="text" id="ban-confirm-input" class="w-full rounded text-sm border-red-200 focus:ring-red-500 uppercase" placeholder="BANIR">
+                            <p id="ban-error" class="text-xs text-red-600 mt-1 hidden">Você precisa digitar exatamente BANIR.</p>
+                        </div>
                         <button type="submit" id="mod-ban-btn" class="w-full py-2 px-4 rounded font-medium text-white transition-colors">
                             Banir Usuário
                         </button>
@@ -178,18 +195,21 @@
                         Atualmente silenciado até: <span id="silence-expiry" class="font-bold"></span>
                     </div>
 
-                    <form id="mod-silence-form" method="POST" class="space-y-3">
+                    <form id="mod-silence-form" method="POST" class="space-y-3" onsubmit="return confirmSilence(event)">
                         @csrf
                         @method('PATCH')
                         <div>
                             <label class="block text-xs font-medium text-orange-700 dark:text-orange-400 mb-1">Duração (em horas - 0 para remover)</label>
-                            <div class="flex gap-2">
-                                <input type="number" name="hours" value="1" min="0" class="flex-1 rounded border-orange-200 text-sm focus:ring-orange-500">
-                                <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-orange-700 transition">
-                                    Aplicar
-                                </button>
-                            </div>
+                            <input type="number" name="hours" id="silence-hours-input" value="1" min="0" class="w-full rounded border-orange-200 text-sm focus:ring-orange-500 mb-3">
                         </div>
+                        <div id="silence-confirm-container">
+                            <label class="block text-xs font-medium text-orange-700 dark:text-orange-400 mb-1">Digite <strong>silenciar</strong> para confirmar:</label>
+                            <input type="text" id="silence-confirm-input" class="w-full rounded text-sm border-orange-200 focus:ring-orange-500 uppercase" placeholder="SILENCIAR">
+                            <p id="silence-error" class="text-xs text-orange-600 mt-1 hidden">Você precisa digitar exatamente SILENCIAR.</p>
+                        </div>
+                        <button type="submit" id="mod-silence-btn" class="w-full bg-orange-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-orange-700 transition">
+                            Aplicar Silenciamento
+                        </button>
                     </form>
                 </div>
             </div>
@@ -298,23 +318,35 @@ function closeEditModal() {
 }
 
 // Moderation Modal functionality
-function openModerationModal(userId, userName, isBanned, silencedUntil) {
+function openModerationModal(userId, userName, userUsername, isBanned, silencedUntil) {
     const modal = document.getElementById('moderationModal');
     if (!modal) return;
 
     document.getElementById('mod-user-name').textContent = userName;
+    document.getElementById('mod-user-profile-link').href = `/${userUsername}`;
+    
+    // Reset inputs and errors
+    document.getElementById('ban-confirm-input').value = '';
+    document.getElementById('ban-error').classList.add('hidden');
+    document.getElementById('silence-confirm-input').value = '';
+    document.getElementById('silence-error').classList.add('hidden');
     
     // Setup Ban form
     const banForm = document.getElementById('mod-ban-form');
     const banBtn = document.getElementById('mod-ban-btn');
+    const banConfirmContainer = document.getElementById('ban-confirm-container');
+    
     banForm.action = `/admin/users/${userId}/toggle-ban`;
+    banForm.dataset.isBanned = isBanned ? '1' : '0'; // Store state for validation
     
     if (isBanned) {
-        banBtn.textContent = 'Desbanir Usuário';
+        banBtn.textContent = 'Desbanir Usuário (Clique Direto)';
         banBtn.className = 'w-full py-2 px-4 rounded font-medium text-white bg-green-600 hover:bg-green-700 transition-colors';
+        banConfirmContainer.classList.add('hidden'); // No confirm needed to unban
     } else {
         banBtn.textContent = 'Banir Usuário';
         banBtn.className = 'w-full py-2 px-4 rounded font-medium text-white bg-red-600 hover:bg-red-700 transition-colors';
+        banConfirmContainer.classList.remove('hidden');
     }
 
     // Setup Silence form
@@ -332,6 +364,47 @@ function openModerationModal(userId, userName, isBanned, silencedUntil) {
     }
 
     modal.classList.remove('hidden');
+}
+
+function confirmBan(e) {
+    const form = document.getElementById('mod-ban-form');
+    const isBanned = form.dataset.isBanned === '1';
+    
+    if (isBanned) {
+        return true; // Unbanning doesn't need confirmation
+    }
+    
+    const input = document.getElementById('ban-confirm-input');
+    const error = document.getElementById('ban-error');
+    
+    if (input.value.trim().toUpperCase() !== 'BANIR') {
+        e.preventDefault();
+        error.classList.remove('hidden');
+        input.classList.add('border-red-500');
+        return false;
+    }
+    
+    return true;
+}
+
+function confirmSilence(e) {
+    const hours = document.getElementById('silence-hours-input').value;
+    
+    if (hours === '0' || hours === '') {
+        return true; // Removing silence doesn't need confirmation
+    }
+    
+    const input = document.getElementById('silence-confirm-input');
+    const error = document.getElementById('silence-error');
+    
+    if (input.value.trim().toUpperCase() !== 'SILENCIAR') {
+        e.preventDefault();
+        error.classList.remove('hidden');
+        input.classList.add('border-red-500');
+        return false;
+    }
+    
+    return true;
 }
 
 function closeModerationModal() {

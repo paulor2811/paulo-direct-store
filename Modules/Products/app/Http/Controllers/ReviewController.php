@@ -29,6 +29,11 @@ class ReviewController extends Controller
 
         $product = Produto::findOrFail($productId);
 
+        // Check if user is the product owner
+        if ($product->user_id === Auth::id()) {
+            return back()->with('error', 'Você não pode avaliar seu próprio anúncio.');
+        }
+
         // Check if user already reviewed this product
         $existingReview = ProductReview::where('user_id', Auth::id())
             ->where('product_id', $productId)

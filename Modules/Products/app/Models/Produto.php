@@ -27,6 +27,9 @@ class Produto extends Model
         'categoria_produto_id',
         'store_id',
         'user_id',
+        'shipping_price_per_km',
+        'shipping_origin_lat',
+        'shipping_origin_lon',
         'created_at',
     ];
 

@@ -15,9 +15,8 @@ class ShippingController extends Controller
 
     public function __construct()
     {
-        $this->originLat = config('shipping.origin.lat', -23.2658375);
-        $this->originLon = config('shipping.origin.lon', -51.1450477);
-        $this->pricePerKm = config('shipping.price_per_km', 2.00);
+        // Default fallbacks are no longer needed globally,
+        // but we'll keep the empty constructor for structure.
     }
 
     // Fallback coordinates for local cities if CEP geocoding fails
@@ -37,10 +36,12 @@ class ShippingController extends Controller
     public function calculate(Request $request)
     {
         $request->validate([
-            "cep" => "required|string|size:8"
+            "cep" => "required|string|size:8",
+            "product_id" => "nullable|string|exists:produtos,id"
         ]);
 
         $cep = $request->input("cep");
+        $productId = $request->input("product_id");
 
         // 1. Get Address via BrasilAPI
         $response = Http::get("https://brasilapi.com.br/api/cep/v2/{$cep}");
@@ -71,22 +72,32 @@ class ShippingController extends Controller
             $destLon = $this->cityFallbacks[$addressData['city']]['lon'];
         }
 
-        if ($destLat && $destLon) {
-            $distanceKm = $this->calculateHaversine(
-                $this->originLat, 
-                $this->originLon, 
-                $destLat, 
-                $destLon
-            );
+        // 3. Math (Only if product is provided and has shipping config)
+        if ($productId) {
+            $product = \Modules\Products\Models\Produto::find($productId);
+            
+            if ($product && $product->shipping_price_per_km && $product->shipping_origin_lat && $product->shipping_origin_lon) {
+                if ($destLat && $destLon) {
+                    $distanceKm = $this->calculateHaversine(
+                        $product->shipping_origin_lat, 
+                        $product->shipping_origin_lon, 
+                        $destLat, 
+                        $destLon
+                    );
 
-            $addressData["distance_km"] = round($distanceKm, 2);
-            $addressData["price"] = round($distanceKm * $this->pricePerKm, 2);
-        } else {
-            $addressData["distance_km"] = null;
-            $addressData["price"] = null;
-            $addressData["geocoding_failed"] = true;
+                    $addressData["distance_km"] = round($distanceKm, 2);
+                    $addressData["price"] = round($distanceKm * $product->shipping_price_per_km, 2);
+                } else {
+                    $addressData["distance_km"] = null;
+                    $addressData["price"] = null;
+                    $addressData["geocoding_failed"] = true;
+                }
+                
+                return response()->json($addressData);
+            }
         }
 
+        // Return only the address info if strictly used for autocomplete or if product doesn't have shipping setup
         return response()->json($addressData);
     }
 

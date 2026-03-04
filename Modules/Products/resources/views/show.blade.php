@@ -206,15 +206,66 @@
               </div>
           </a>
 
+          @php
+              $locationCityUser = $product->user->addresses->first();
+              $locationText = null;
+
+              if ($product->store_id && $product->store && $product->store->endereco) {
+                  // Fallback to store address if it exists
+                  $locationText = $product->store->endereco;
+              } elseif ($locationCityUser) {
+                  $locationText = $locationCityUser->city . ' - ' . $locationCityUser->state;
+              }
+          @endphp
+
+          @if($locationText)
+          <div class="mt-4 flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+              <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+              </svg>
+              <span>Localização: {{ $locationText }}</span>
+          </div>
+          @endif
+
           <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
             @php
-                $whatsappNumber = '5543999628432'; // Default
+                $whatsappNumber = null;
                 if ($product->store_id && $product->store && $product->store->whatsapp) {
                     $whatsappNumber = preg_replace('/[^0-9]/', '', $product->store->whatsapp);
+                } elseif ($product->user && $product->user->phone) {
+                    $whatsappNumber = preg_replace('/[^0-9]/', '', $product->user->phone);
                 }
                 
-                $whatsappMessage = 'Olá, tenho interesse no produto: ' . $product->nome . "\n" . 'Link: ' . route('products.show', $product->id);
+                if ($whatsappNumber) {
+                    // Ensure it has country code if missing
+                    if (strlen($whatsappNumber) <= 11) {
+                        $whatsappNumber = '55' . $whatsappNumber;
+                    }
+                    $whatsappMessage = 'Olá, tenho interesse no produto: ' . $product->nome . "\n" . 'Link: ' . route('products.show', $product->id);
+                }
             @endphp
+            @if(!auth()->check())
+            <a
+              href="{{ route('login') }}"
+              title="Faça login para ver o contato"
+              class="text-white mt-4 sm:mt-0 bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-black rounded-xl text-xs px-8 py-4 flex items-center justify-center w-full sm:w-auto transition-all active:scale-95 uppercase tracking-widest shadow-lg shadow-gray-500/20"
+              role="button"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+              Login para Ver Contato
+            </a>
+            @elseif(auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
+            <a
+              href="{{ route('verification.notice') }}"
+              title="Verifique seu e-mail para ver o contato"
+              class="text-white mt-4 sm:mt-0 bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-black rounded-xl text-xs px-8 py-4 flex items-center justify-center w-full sm:w-auto transition-all active:scale-95 uppercase tracking-widest shadow-lg shadow-yellow-500/20"
+              role="button"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              Verifique E-mail para Ver
+            </a>
+            @elseif($whatsappNumber)
             <a
               href="https://wa.me/{{ $whatsappNumber }}?text={{ urlencode($whatsappMessage) }}"
               target="_blank"
@@ -227,6 +278,14 @@
               </svg>
               Conversar Agora
             </a>
+            @else
+            <button
+              disabled
+              class="text-gray-400 mt-4 sm:mt-0 bg-gray-100 font-black rounded-xl text-xs px-8 py-4 flex items-center justify-center w-full sm:w-auto uppercase tracking-widest cursor-not-allowed border border-gray-200"
+            >
+              Contato Não Disponível
+            </button>
+            @endif
           </div>
 
           <!-- How to Buy Instructions -->
@@ -248,16 +307,18 @@
               </ul>
               
               <!-- Shipping Calculator -->
+              @if($product->shipping_price_per_km && $product->shipping_origin_lat && $product->shipping_origin_lon)
               <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <h4 class="font-medium text-gray-900 dark:text-white mb-2">Simular Frete (Londrina e Região)</h4>
+                  <h4 class="font-medium text-gray-900 dark:text-white mb-2">Simular Frete (Calculado por KM)</h4>
                   <div class="flex items-center gap-2">
                       <input type="text" id="cep-input" maxlength="8" placeholder="Digite seu CEP" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
-                      <button onclick="calculateShipping()" class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                      <button onclick="calculateShipping()" class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 transition-colors">
                           Calcular
                       </button>
                   </div>
                   <div id="shipping-result" class="mt-2 text-sm hidden font-medium"></div>
               </div>
+              @endif
           </div>
           
           <script>
@@ -281,7 +342,10 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ cep: cep })
+                        body: JSON.stringify({ 
+                            cep: cep,
+                            product_id: '{{ $product->id }}'
+                        })
                     });
 
                     const data = await response.json();

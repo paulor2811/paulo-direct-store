@@ -9,11 +9,12 @@ Route::get('/', function () {
 
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::patch('/profile/address', [ProfileController::class, 'updateAddress'])->name('profile.address.update');
+    Route::post('/profile/quick-setup', [ProfileController::class, 'quickSetup'])->name('profile.quick-setup');
     
     Route::get('/account', [ProfileController::class, 'account'])->name('profile.account');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

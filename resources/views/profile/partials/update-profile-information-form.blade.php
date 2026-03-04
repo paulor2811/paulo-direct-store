@@ -36,8 +36,9 @@
         </div>
 
         <div>
-            <x-input-label for="phone" :value="__('Phone')" />
-            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" autocomplete="tel" />
+            <x-input-label for="phone" :value="__('Telefone / WhatsApp')" />
+            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" autocomplete="tel" placeholder="(00) 00000-0000" />
+            <p class="mt-1 text-xs text-gray-400">Este número será usado para compradores te contatarem pelo WhatsApp quando você publicar anúncios.</p>
             <x-input-error class="mt-2" :messages="$errors->get('phone')" />
         </div>
 

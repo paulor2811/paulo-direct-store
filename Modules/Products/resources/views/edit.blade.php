@@ -96,6 +96,39 @@
             </div>
         </div>
 
+        {{-- Dynamic Shipping Configuration --}}
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900">Oferecer Entrega Própria</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Permitir que compradores simulem o frete até eles baseado no custo por Km de distância.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggle_shipping" class="sr-only peer" onchange="toggleShippingFields()" {{ old('shipping_price_per_km', $product->shipping_price_per_km) ? 'checked' : '' }}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
+            <div id="shipping_config_panel" class="{{ old('shipping_price_per_km', $product->shipping_price_per_km) ? '' : 'hidden' }} grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+                <div>
+                    <label for="shipping_price_per_km" class="block text-xs font-bold text-gray-700 uppercase tracking-widest">Preço por Km (R$) *</label>
+                    <input type="number" step="0.01" min="0" name="shipping_price_per_km" id="shipping_price_per_km" value="{{ old('shipping_price_per_km', $product->shipping_price_per_km) }}" placeholder="Ex: 2.50"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-widest">Ponto de Partida *</label>
+                    <button type="button" onclick="captureLocation()" id="btn_capture_location" class="mt-1 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 {{ old('shipping_origin_lat', $product->shipping_origin_lat) ? 'bg-green-50 text-green-700 border-green-200' : 'bg-white hover:bg-gray-50' }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2 {{ old('shipping_origin_lat', $product->shipping_origin_lat) ? 'text-green-500' : 'text-indigo-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span id="txt_capture_location">{{ old('shipping_origin_lat', $product->shipping_origin_lat) ? 'Atualizar Localização' : 'Capturar Minha Localização' }}</span>
+                    </button>
+                    <input type="hidden" name="shipping_origin_lat" id="shipping_origin_lat" value="{{ old('shipping_origin_lat', $product->shipping_origin_lat) }}">
+                    <input type="hidden" name="shipping_origin_lon" id="shipping_origin_lon" value="{{ old('shipping_origin_lon', $product->shipping_origin_lon) }}">
+                    <p id="location_status" class="mt-1 text-xs text-green-600 {{ old('shipping_origin_lat', $product->shipping_origin_lat) ? '' : 'hidden' }} font-semibold">✓ Localização capturada com sucesso!</p>
+                </div>
+            </div>
+        </div>
+
         {{-- Current Images --}}
         @php
             $currentImages = $product->images();
@@ -216,12 +249,19 @@ function addNewImages(event) {
     });
 
     renderNewPreviews();
-    event.target.value = '';
+    updateNewInputFiles();
 }
 
 function removeNewImage(index) {
     newFiles.splice(index, 1);
     renderNewPreviews();
+    updateNewInputFiles();
+}
+
+function updateNewInputFiles() {
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => dataTransfer.items.add(file));
+    document.getElementById('images').files = dataTransfer.files;
 }
 
 function renderNewPreviews() {
@@ -250,12 +290,7 @@ function renderNewPreviews() {
     });
 }
 
-// Sync files with form on submit
-document.getElementById('productForm').addEventListener('submit', function(e) {
-    const dataTransfer = new DataTransfer();
-    newFiles.forEach(file => dataTransfer.items.add(file));
-    document.getElementById('images').files = dataTransfer.files;
-});
+
 
 // Simple Drag & Drop support
 const dropzone = document.getElementById('dropzone');
@@ -275,6 +310,107 @@ dropzone.addEventListener('drop', (e) => {
     
     const event = { target: { files: files } };
     addNewImages(event);
+});
+
+// Dynamic Shipping Scripts
+function toggleShippingFields() {
+    const toggle = document.getElementById('toggle_shipping');
+    const panel = document.getElementById('shipping_config_panel');
+    const priceInput = document.getElementById('shipping_price_per_km');
+    const latInput = document.getElementById('shipping_origin_lat');
+    const lonInput = document.getElementById('shipping_origin_lon');
+
+    if (toggle.checked) {
+        panel.classList.remove('hidden');
+        priceInput.required = true;
+    } else {
+        panel.classList.add('hidden');
+        priceInput.required = false;
+        priceInput.value = '';
+        latInput.value = '';
+        lonInput.value = '';
+        document.getElementById('location_status').classList.add('hidden');
+        document.getElementById('txt_capture_location').innerText = 'Capturar Minha Localização';
+        const btnCapture = document.getElementById('btn_capture_location');
+        btnCapture.classList.remove('bg-green-50', 'text-green-700', 'border-green-200');
+        btnCapture.classList.add('bg-white', 'hover:bg-gray-50');
+        btnCapture.querySelector('svg').classList.remove('text-green-500');
+        btnCapture.querySelector('svg').classList.add('text-indigo-500');
+    }
+}
+
+function captureLocation() {
+    const btnText = document.getElementById('txt_capture_location');
+    const btn = document.getElementById('btn_capture_location');
+    const statusMsg = document.getElementById('location_status');
+    const svgIcon = btn.querySelector('svg');
+
+    if (!navigator.geolocation) {
+        alert("Geolocalização não é suportada pelo seu navegador.");
+        return;
+    }
+
+    btnText.innerText = "Capturando...";
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            document.getElementById('shipping_origin_lat').value = position.coords.latitude;
+            document.getElementById('shipping_origin_lon').value = position.coords.longitude;
+            
+            btnText.innerText = "Atualizar Localização";
+            btn.classList.remove('bg-white', 'hover:bg-gray-50');
+            btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+            svgIcon.classList.remove('text-indigo-500');
+            svgIcon.classList.add('text-green-500');
+            statusMsg.classList.remove('hidden');
+            btn.disabled = false;
+        },
+        function(error) {
+            console.warn(error);
+            const fallbackCep = prompt("Acesso ao GPS bloqueado (HTTP local ou negado). Digite seu CEP para capturar a coordenada da sua cidade (Somente números):");
+            if (fallbackCep && fallbackCep.replace(/\D/g, '').length === 8) {
+                btnText.innerText = "Buscando CEP...";
+                fetch('https://brasilapi.com.br/api/cep/v2/' + fallbackCep.replace(/\D/g, ''))
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.location && data.location.coordinates && data.location.coordinates.latitude) {
+                            document.getElementById('shipping_origin_lat').value = data.location.coordinates.latitude;
+                            document.getElementById('shipping_origin_lon').value = data.location.coordinates.longitude;
+                            btnText.innerText = "Atualizar Localização";
+                            btn.classList.remove('bg-white', 'hover:bg-gray-50');
+                            btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                            svgIcon.classList.remove('text-indigo-500');
+                            svgIcon.classList.add('text-green-500');
+                            statusMsg.innerText = "✓ Coordenadas do CEP salvas com sucesso!";
+                            statusMsg.classList.remove('hidden');
+                        } else {
+                            alert("Não encontramos coordenadas exatas para este CEP na base dos Correios.");
+                            btnText.innerText = "Tentar Novamente";
+                        }
+                    })
+                    .catch(e => {
+                        alert("Erro ao buscar o CEP na BrasilAPI.");
+                        btnText.innerText = "Tentar Novamente";
+                    })
+                    .finally(() => { btn.disabled = false; });
+            } else {
+                btnText.innerText = "Tentar Novamente";
+                btn.disabled = false;
+            }
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+    );
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Basic state enforcement in case browser overrides caching mechanism
+    const toggle = document.getElementById('toggle_shipping');
+    const latVal = document.getElementById('shipping_origin_lat').value;
+    
+    if (toggle.checked) {
+        document.getElementById('shipping_price_per_km').required = true;
+    }
 });
 </script>
 </x-products::layouts.master>

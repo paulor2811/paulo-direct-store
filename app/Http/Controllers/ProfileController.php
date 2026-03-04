@@ -86,6 +86,50 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the user's phone and address information via a quick setup modal.
+     */
+    public function quickSetup(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        // 1. Validando o Telefone e o Endereço que virão no mesmo request
+        $validatedData = $request->validate([
+            'phone' => ['required', 'string', 'max:20'],
+            'cep' => ['required', 'string', 'max:10'],
+            'street' => ['required', 'string', 'max:255'],
+            'number' => ['nullable', 'string', 'max:20'],
+            'complement' => ['nullable', 'string', 'max:255'],
+            'neighborhood' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'size:2'],
+        ]);
+
+        // 2. Atualizar o telefone na tabela users
+        $user->update(['phone' => $validatedData['phone']]);
+
+        // 3. Atualizar ou Criar o Endereço na tabela user_addresses
+        $addressData = [
+            'zip_code' => $validatedData['cep'],
+            'street' => $validatedData['street'],
+            'number' => $validatedData['number'],
+            'complement' => $validatedData['complement'],
+            'neighborhood' => $validatedData['neighborhood'],
+            'city' => $validatedData['city'],
+            'state' => $validatedData['state'],
+        ];
+
+        $address = $user->addresses()->first();
+        if ($address) {
+            $address->update($addressData);
+        } else {
+            $user->addresses()->create($addressData);
+        }
+
+        // 4. Retornar de volta para a tela de criação limpa
+        return Redirect::back()->with('success', 'Perfil atualizado com sucesso! Pode continuar criando o seu anúncio.');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
